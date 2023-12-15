@@ -1,6 +1,7 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import json
 from supabase import create_client, Client
+from passlib.hash import bcrypt
 
 app = Flask(__name__)
 
@@ -15,26 +16,39 @@ def api_users_signup():
     password = request.form.get('password')
     error = False
 
-    if (not name) or (len(name) < 2): 
+    # Validate name
+    if not name or len(name) < 2:
         error = 'Name needs to be valid'
-    if (not email) or (len(email)<5): #You can even check with regx
-        error='Email needs to be valid'
-    if (not error) and ( (not password) or (len(password)<5) ):
-        error='Provide a password'        
-    if (not error):    
-        response = supabase.table('users').select("*").ilike('email', email).execute()
-        if len(response.data)>0:
-            error='User already exists'
-    if (not error):    
-        response = supabase.table('users').insert({"name" : name, "email": email, "password": password}).execute()
-        print(str(response.data))
-        if len(response.data)==0:
-            error='Error creating the user'        
-    if error:
-        return json.dumps({'status':500,'message':error})        
-    
-    return json.dumps({'status':200,'message':'','data':response.data[0]})
 
+    # Validate email
+    if not error and (not email or len(email) < 5):
+        error = 'Email needs to be valid'
+
+    # Validate password
+    if not error and (not password or len(password) < 5):
+        error = 'Provide a valid password'
+
+    # Check if user already exists
+    if not error:
+        response = supabase.table('users').select("*").ilike('email', email).execute()
+        if len(response.data) > 0:
+            error = 'User already exists'
+
+    # If no error, proceed with sign-up
+    if not error:
+        # Hash the password using Bcrypt
+        hashed_password = bcrypt.hash(password)
+
+        # Store the hashed password in the database
+        response = supabase.table('users').insert({"name": name, "email": email, "password": hashed_password}).execute()
+        print(str(response.data))
+        if len(response.data) == 0:
+            error = 'Error creating the user'
+
+    if error:
+        return jsonify({'status': 200, 'message': error})
+
+    return jsonify({'status': 200, 'message': '', 'data': response.data[0]})
 @app.route('/users.login',methods=['GET','POST'])
 def api_users_login():
     email= request.form.get('email')
@@ -68,4 +82,4 @@ def about():
     return 'Welcome '
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True, port=5003)
