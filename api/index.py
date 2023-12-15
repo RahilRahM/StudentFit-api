@@ -72,6 +72,25 @@ def api_users_signup_auth():
     print(str(response))    
     return str(response)
 
+@app.route('/users.updateGender', methods=['POST'])
+def api_users_update_gender():
+    uid = request.form.get('uid')
+    gender = request.form.get('gender')
+
+    if uid and gender:
+        # Update the gender in the users_info table
+        response = supabase.table('users_info').upsert(
+            {"user_id": uid, "gender": gender},
+            on_conflict=['user_id'],
+        ).execute()
+
+        if len(response.data) > 0:
+            return json.dumps({'status': 200, 'message': '', 'data': response.data[0]})
+        else:
+            return json.dumps({'status': 500, 'message': 'Error updating gender'})
+    else:
+        return json.dumps({'status': 500, 'message': 'Invalid request'})
+
 @app.route('/')
 def about():
     return 'Welcome '
