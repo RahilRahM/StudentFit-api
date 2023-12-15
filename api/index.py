@@ -66,6 +66,14 @@ def api_users_login():
     
 
 @app.route('/users.signup.auth',methods=['GET','POST'])
+def api_users_signup_auth():
+    email= request.args.get('email')
+    password= request.args.get('password')
+    response = supabase.auth.sign_up({"email": email, "password": password})        
+    print(str(response))    
+    return str(response)
+
+@app.route('/users.updateGender', methods=['GET','POST'])
 def api_users_update_gender():
     try:
         uid = request.form.get('uid')
