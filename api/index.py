@@ -72,11 +72,13 @@ def api_users_signup_auth():
     print(str(response))    
     return str(response)
 
-@app.route('/users.updateGender', methods=['GET','POST'])
+
+@app.route('/users.updateGender', methods=['POST'])
 def api_users_update_gender():
     try:
-        uid = request.form.get('uid')
-        gender = request.form.get('gender')
+        data = request.get_json()
+        uid = data.get('uid')
+        gender = data.get('gender')
 
         print(f"Received request: uid={uid}, gender={gender}")
 
@@ -85,26 +87,26 @@ def api_users_update_gender():
             user_response = supabase.table('users').select("*").eq('id', uid).execute()
 
             if len(user_response.data) == 0:
-                return json.dumps({'status': 400, 'message': 'User not found'})
+                return jsonify({'status': 400, 'message': 'User not found'})
 
             # Update the gender in the users_info table
             response = supabase.table('users_info').upsert(
-                {"user_id": uid, "gender": str(gender)},  # Convert gender to string
+                {"user_id": uid, "gender": gender},
                 on_conflict=['user_id'],
             ).execute()
 
             print(f"Update response: {response}")
 
             if len(response.data) > 0:
-                return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
+                return jsonify({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
             else:
-                return json.dumps({'status': 500, 'message': 'Error updating gender'})
+                return jsonify({'status': 500, 'message': 'Error updating gender'})
         else:
-            return json.dumps({'status': 400, 'message': 'Invalid request. Missing uid or gender parameter'})
+            return jsonify({'status': 400, 'message': 'Invalid request. Missing uid or gender parameter'})
 
     except Exception as e:
         print(f"Error updating gender: {e}")
-        return json.dumps({'status': 500, 'message': f'Internal Server Error: {e}'})
+        return jsonify({'status': 500, 'message': f'Internal Server Error: {e}'})
 
 
 @app.route('/')
