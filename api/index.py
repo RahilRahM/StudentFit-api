@@ -80,40 +80,16 @@ def api_users_update_gender():
         gender = request.form.get('gender')
 
         if uid and gender:
-            # Check if the user exists in the users table
-            user_response = supabase.table('users').select("*").eq('id', uid).execute()
+            # Update the gender in the users_info table
+            response = supabase.table('users_info').upsert(
+                {"user_id": uid, "gender": gender},
+                on_conflict=['user_id'],
+            ).execute()
 
-            if len(user_response.data) > 0:
-                # User exists, try to update users_info table
-                response = supabase.table('users_info').upsert(
-                    {"user_id": uid, "gender": gender},
-                    on_conflict=['user_id'],
-                ).execute()
-
-                if len(response.data) > 0:
-                    return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
-                else:
-                    return json.dumps({'status': 500, 'message': 'Error updating gender'})
-
+            if len(response.data) > 0:
+                return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
             else:
-                # User doesn't exist, insert into users table and then update users_info table
-                user_insert_response = supabase.table('users').insert(
-                    {"id": uid, "email": "", "password": ""}  # You might need to adjust this based on your users table structure
-                ).execute()
-
-                if len(user_insert_response.data) > 0:
-                    # User inserted successfully, now update users_info table
-                    response = supabase.table('users_info').upsert(
-                        {"user_id": uid, "gender": gender},
-                        on_conflict=['user_id'],
-                    ).execute()
-
-                    if len(response.data) > 0:
-                        return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
-                    else:
-                        return json.dumps({'status': 500, 'message': 'Error updating gender'})
-                else:
-                    return json.dumps({'status': 500, 'message': 'Error inserting user'})
+                return json.dumps({'status': 500, 'message': 'Error updating gender'})
 
         else:
             return json.dumps({'status': 400, 'message': 'Invalid request. Missing uid or gender parameter'})
@@ -121,6 +97,7 @@ def api_users_update_gender():
     except Exception as e:
         print(f"Error updating gender: {e}")
         return json.dumps({'status': 500, 'message': 'Internal Server Error'})
+
 
 
 @app.route('/')
