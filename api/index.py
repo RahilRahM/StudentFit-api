@@ -72,7 +72,7 @@ def api_users_signup_auth():
     print(str(response))    
     return str(response)
 
-@app.route('/users.updateGender', methods=['POST'])
+@app.route('/users.updateGender', methods=['GET','POST'])
 def api_users_update_gender():
     try:
         uid = request.form.get('uid')
@@ -105,7 +105,7 @@ def api_users_update_gender():
 
 @app.route('/')
 def about():
-    return 'Welcome '
+    return 'Welcome'
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
