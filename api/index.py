@@ -10,9 +10,13 @@ supabase: Client = create_client(url, key)
 
 @app.route('/users.signup',methods=['GET','POST'])
 def api_users_signup():
-    email= request.form.get('email')
-    password= request.form.get('password')
-    error =False
+    name = request.form.get('name')
+    email = request.form.get('email')
+    password = request.form.get('password')
+    error = False
+
+    if (not name) or (len(name) < 2): 
+        error = 'Name needs to be valid'
     if (not email) or (len(email)<5): #You can even check with regx
         error='Email needs to be valid'
     if (not error) and ( (not password) or (len(password)<5) ):
@@ -22,7 +26,7 @@ def api_users_signup():
         if len(response.data)>0:
             error='User already exists'
     if (not error):    
-        response = supabase.table('users').insert({"email": email, "password": password}).execute()
+        response = supabase.table('users').insert({"name" : name, "email": email, "password": password}).execute()
         print(str(response.data))
         if len(response.data)==0:
             error='Error creating the user'        
