@@ -73,7 +73,7 @@ def api_users_signup_auth():
     return str(response)
 
 
-@app.route('/users.updateGender', methods=['POST'])
+@app.route('/users.updateGender', methods=['POST','GET'])
 def api_users_update_gender():
     try:
         data = request.get_json()
