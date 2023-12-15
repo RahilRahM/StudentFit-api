@@ -44,6 +44,7 @@ def api_users_signup():
         return json.dumps({'status': 200, 'message': error})
 
     return json.dumps({'status': 200, 'message': '', 'data': response.data[0]})
+
 @app.route('/users.login',methods=['GET','POST'])
 def api_users_login():
     email= request.form.get('email')
@@ -65,14 +66,6 @@ def api_users_login():
     
 
 @app.route('/users.signup.auth',methods=['GET','POST'])
-def api_users_signup_auth():
-    email= request.args.get('email')
-    password= request.args.get('password')
-    response = supabase.auth.sign_up({"email": email, "password": password})        
-    print(str(response))    
-    return str(response)
-
-@app.route('/users.updateGender', methods=['GET','POST'])
 def api_users_update_gender():
     try:
         uid = request.form.get('uid')
@@ -81,20 +74,39 @@ def api_users_update_gender():
         if uid and gender:
             # Check if the user exists in the users table
             user_response = supabase.table('users').select("*").eq('id', uid).execute()
-            
-            if len(user_response.data) == 0:
-                return json.dumps({'status': 400, 'message': 'User not found'})
 
-            # Update the gender in the users_info table
-            response = supabase.table('users_info').upsert(
-                {"user_id": uid, "gender": gender},
-                on_conflict=['user_id'],
-            ).execute()
+            if len(user_response.data) > 0:
+                # User exists, try to update users_info table
+                response = supabase.table('users_info').upsert(
+                    {"user_id": uid, "gender": gender},
+                    on_conflict=['user_id'],
+                ).execute()
 
-            if len(response.data) > 0:
-                return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
+                if len(response.data) > 0:
+                    return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
+                else:
+                    return json.dumps({'status': 500, 'message': 'Error updating gender'})
+
             else:
-                return json.dumps({'status': 500, 'message': 'Error updating gender'})
+                # User doesn't exist, insert into users table and then update users_info table
+                user_insert_response = supabase.table('users').insert(
+                    {"id": uid, "email": "", "password": ""}  # You might need to adjust this based on your users table structure
+                ).execute()
+
+                if len(user_insert_response.data) > 0:
+                    # User inserted successfully, now update users_info table
+                    response = supabase.table('users_info').upsert(
+                        {"user_id": uid, "gender": gender},
+                        on_conflict=['user_id'],
+                    ).execute()
+
+                    if len(response.data) > 0:
+                        return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
+                    else:
+                        return json.dumps({'status': 500, 'message': 'Error updating gender'})
+                else:
+                    return json.dumps({'status': 500, 'message': 'Error inserting user'})
+
         else:
             return json.dumps({'status': 400, 'message': 'Invalid request. Missing uid or gender parameter'})
 
