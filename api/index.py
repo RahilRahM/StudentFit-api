@@ -72,16 +72,18 @@ def api_users_signup_auth():
     print(str(response))    
     return str(response)
 
-@app.route('/users.updateGender', methods=['GET','POST'])
+@app.route('/users.updateGender', methods=['POST'])
 def api_users_update_gender():
     try:
         uid = request.form.get('uid')
         gender = request.form.get('gender')
 
+        print(f"Received request: uid={uid}, gender={gender}")
+
         if uid and gender:
             # Check if the user exists in the users table
             user_response = supabase.table('users').select("*").eq('id', uid).execute()
-            
+
             if len(user_response.data) == 0:
                 return json.dumps({'status': 400, 'message': 'User not found'})
 
@@ -90,6 +92,8 @@ def api_users_update_gender():
                 {"user_id": uid, "gender": gender},
                 on_conflict=['user_id'],
             ).execute()
+
+            print(f"Update response: {response}")
 
             if len(response.data) > 0:
                 return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
@@ -100,7 +104,8 @@ def api_users_update_gender():
 
     except Exception as e:
         print(f"Error updating gender: {e}")
-        return json.dumps({'status': 500, 'message': 'Internal Server Error'})
+        return json.dumps({'status': 500, 'message': f'Internal Server Error: {e}'})
+
 
 
 @app.route('/')
