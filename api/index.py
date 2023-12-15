@@ -72,7 +72,7 @@ def api_users_signup_auth():
     print(str(response))    
     return str(response)
 
-@app.route('/users.updateGender', methods=['POST'])
+@app.route('/users.updateGender', methods=['GET','POST'])
 def api_users_update_gender():
     try:
         uid = request.form.get('uid')
@@ -89,7 +89,7 @@ def api_users_update_gender():
 
             # Update the gender in the users_info table
             response = supabase.table('users_info').upsert(
-                {"user_id": uid, "gender": gender},
+                {"user_id": uid, "gender": str(gender)},  # Convert gender to string
                 on_conflict=['user_id'],
             ).execute()
 
@@ -105,7 +105,6 @@ def api_users_update_gender():
     except Exception as e:
         print(f"Error updating gender: {e}")
         return json.dumps({'status': 500, 'message': f'Internal Server Error: {e}'})
-
 
 
 @app.route('/')
