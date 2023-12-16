@@ -110,7 +110,10 @@ def api_users_change_password():
 def api_users_update_gender():
     email = request.form.get('email')
     gender = request.form.get('gender')
-    
+
+    user_id = supabase.table('users').select('id').ilike('email', email.lower()).execute()
+    print(f"User ID for email {email}: {user_id}")
+
     print (email,gender)
     try:
         if not (email and gender):
@@ -139,7 +142,6 @@ def api_users_update_gender():
     except Exception as e:
         print(f"Exception in /users.updateGender: {str(e)}")
         return json.dumps({'status': 500, 'message': 'Internal Server Error'})
-
 
 @app.route('/')
 def about():
