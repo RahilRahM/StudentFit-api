@@ -82,7 +82,7 @@ def api_users_update_gender():
         if uid and gender:
             # Update the gender in the users_info table
             response = supabase.table('users_info').upsert(
-                {"user_id": uid, "gender": gender},
+                {"user_id": int(uid), "gender": gender},
                 on_conflict=['user_id'],
             ).execute()
 
