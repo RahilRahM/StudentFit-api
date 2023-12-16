@@ -106,7 +106,7 @@ def api_users_change_password():
 
     return jsonify({'status': 200, 'message': 'Password updated successfully'})
 
-@app.route('/users.updateGender', methods=['POST'])
+@app.route('/users.updateGender', methods=['GET', 'POST'])
 def api_users_update_gender():
     email = request.form.get('email')
     gender = request.form.get('gender')
