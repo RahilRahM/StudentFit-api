@@ -74,16 +74,15 @@ def api_users_update_gender():
         return json.dumps({'status': 400, 'message': 'Invalid input'})
 
     # Get user id from 'users' table
-    user_data = supabase.table('users').select('id').ilike('email', email).execute().get('data', [])
-    if not user_data:
+    user_response = supabase.table('users').select('id').ilike('email', email).execute()
+    if not user_response.data:
         return json.dumps({'status': 404, 'message': 'User not found'})
 
-    user_id = user_data[0]['id']
+    # Get the user's id
+    user_id = user_response.data[0]['id']
 
     # Insert new row into 'users_info' table
-    result = supabase.table('users_info').upsert([
-        {'user_id': user_id, 'gender': gender}
-    ], on_conflict=['user_id'])
+    result = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
 
     # Check if the gender update was successful
     if result['status'] == 201:
