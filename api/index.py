@@ -60,41 +60,38 @@ def api_users_signup_auth():
     response = supabase.auth.sign_up({"email": email, "password": password})        
     print(str(response))    
     return str(response)
+
+@app.route('/users.updateGender', methods=['POST'])
 @app.route('/users.updateGender', methods=['GET','POST'])
 def api_users_update_gender():
     try:
         uid = request.form.get('uid')
         gender = request.form.get('gender')
         if uid and gender:
+            # Check if the user exists in the users table
+            user_response = supabase.table('users').select("*").eq('id', uid).execute()
+            
+            if len(user_response.data) == 0:
+                return json.dumps({'status': 400, 'message': 'User not found'})
             # Update the gender in the users_info table
             response = supabase.table('users_info').upsert(
-                {"user_id": int(uid), "gender": gender},
                 {"user_id": uid, "gender": gender},
                 on_conflict=['user_id'],
             ).execute()
-
-            if 'error' in response:
-                return json.dumps({'status': 500, 'message': f"Supabase Error: {response['error']['message']}"})
-
             if len(response.data) > 0:
-                if 'data' in response and len(response.data) > 0:
-                    return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
-                elif 'data' not in response:
-                    return json.dumps({'status': 500, 'message': 'Error updating gender. No data returned from Supabase.'})
-                else:
-                    # Supabase response indicates success, but no data returned
-                    return json.dumps({'status': 500, 'message': 'Error updating gender. No data returned from Supabase.'})
-
+                return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
+            else:
+                return json.dumps({'status': 500, 'message': 'Error updating gender'})
         else:
             return json.dumps({'status': 400, 'message': 'Invalid request. Missing uid or gender parameter'})
     except Exception as e:
         print(f"Error updating gender: {e}")
-        return json.dumps({'status': 500, 'message': f'Internal Server Error: {e}'})
-
-
+        return json.dumps({'status': 500, 'message': 'Internal Server Error'})
 
 @app.route('/')
 def about():
+    return 'Welcome '
     return 'Welcome'
+
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
