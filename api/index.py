@@ -61,21 +61,20 @@ def api_users_signup_auth():
     print(str(response))    
     return str(response)
 
-@app.route('/users.updateGender', methods=['POST'])
 @app.route('/users.updateGender', methods=['GET','POST'])
 def api_users_update_gender():
     try:
-        uid = request.form.get('uid')
+        email = request.form.get('uid')
         gender = request.form.get('gender')
-        if uid and gender:
+        if email and gender:
             # Check if the user exists in the users table
-            user_response = supabase.table('users').select("*").eq('id', uid).execute()
+            user_response = supabase.table('users').select("id").eq('email', email).execute()
             
             if len(user_response.data) == 0:
                 return json.dumps({'status': 400, 'message': 'User not found'})
             # Update the gender in the users_info table
             response = supabase.table('users_info').upsert(
-                {"user_id": uid, "gender": gender},
+                {"user_id": user_response, "gender": gender},
                 on_conflict=['user_id'],
             ).execute()
             if len(response.data) > 0:
