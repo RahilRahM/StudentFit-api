@@ -64,7 +64,7 @@ def api_users_signup_auth():
 @app.route('/users.updateGender', methods=['GET','POST'])
 def api_users_update_gender():
     try:
-        email = request.form.get('uid')
+        email = request.form.get('email')
         gender = request.form.get('gender')
         if email and gender:
             # Check if the user exists in the users table
