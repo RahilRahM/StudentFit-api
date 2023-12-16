@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 import json
 from supabase import create_client, Client
+import traceback
 
 app = Flask(__name__)
 
@@ -137,8 +138,7 @@ def api_users_update_gender():
         else:
             return json.dumps({'status': result['status'], 'message': result['error']['message']})
     except Exception as e:
-        print(f"Exception in /users.updateGender: {str(e)}")
-        return json.dumps({'status': 500, 'message': 'Internal Server Error'})
+        traceback.print_exc(e)
 
 @app.route('/')
 def about():
