@@ -127,9 +127,7 @@ def api_users_update_gender():
         return json.dumps({'status': 404, 'message': 'User not found'})
 
     # Insert new row into 'users_info' table
-    result = supabase.table('users_info').insert([
-        {'user_id': user_id, 'gender': gender}
-    ], on_conflict=['user_id']).execute()
+    result = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
 
     # Check if the gender update was successful
     if result['status'] == 201:
