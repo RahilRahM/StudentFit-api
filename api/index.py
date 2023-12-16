@@ -114,41 +114,23 @@ def api_users_change_password():
 
 @app.route('/users.updateGender', methods=['GET','POST'])
 def api_users_update_gender():
-    try:
-        # Get input parameters from the request
-        email = request.form.get('email')
-        gender = request.form.get('gender')
+    email = request.form.get('email')
+    gender = request.form.get('gender')
 
-        # Validate inputs
-        if not (email and gender):
-            print("Invalid input")
-            return json.dumps({'status': 400, 'message': 'Invalid input'})
+    if not (email and gender):
+        return json.dumps({'status': 400, 'message': 'Invalid input'})
 
-        print(f"Received request to update gender for email: {email}, gender: {gender}")
+    user_id = supabase.table('users').select('id').ilike('email', email).execute()
 
-        # Get user id from 'users' table
-        user_id = supabase.table('users').select('id').ilike('email', email).execute()
-        if not user_id:
-            print("User not found")
-            return json.dumps({'status': 404, 'message': 'User not found'})
+    if not user_id:
+        return json.dumps({'status': 404, 'message': 'User not found'})
 
-        print(f"User ID found: {user_id}")
+    result = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
 
-        # Insert new row into 'users_info' table
-        result = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
-
-        print(f"Insert result: {result}")
-
-        # Check if the gender update was successful
-        if result['status'] == 201:
-            return json.dumps({'status': 200, 'message': 'Gender updated successfully'})
-        else:
-            return json.dumps({'status': result['status'], 'message': result['error']['message']})
-
-    except Exception as e:
-        # Log the exception for further investigation
-        print(f"Exception: {e}")
-        return json.dumps({'status': 500, 'message': 'Internal Server Error'})
+    if result['status'] == 201:
+        return json.dumps({'status': 200, 'message': 'Gender updated successfully'})
+    else:
+        return json.dumps({'status': result['status'], 'message': result['error']['message']})
 
 
 @app.route('/')
