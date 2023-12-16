@@ -76,33 +76,43 @@ def api_users_signup_auth():
 @app.route('/users.updateGender', methods=['GET','POST'])
 def api_users_update_gender():
     try:
-        uid = request.form.get('uid')
+        email = request.form.get('email')
         gender = request.form.get('gender')
 
-        if uid and gender:
-            # Update the gender in the users_info table
-            response = supabase.table('users_info').upsert(
-                {"user_id": uid, "gender": gender},
+        if email and gender:
+            # Step 1: Retrieve user ID from the users table based on email
+            response_users = supabase.table('users').select('id').ilike('email', email).execute()
+
+            if 'error' in response_users:
+                return jsonify({'status': 500, 'message': f"Supabase Error: {response_users['error']['message']}"})
+
+            user_id = response_users.data[0]['id'] if 'data' in response_users and len(response_users.data) > 0 else None
+
+            if not user_id:
+                return jsonify({'status': 404, 'message': 'User not found'})
+
+            # Step 2: Update the gender in the users_info table
+            response_info = supabase.table('users_info').upsert(
+                {"user_id": user_id, "gender": gender},
                 on_conflict=['user_id'],
             ).execute()
 
-            if 'error' in response:
-                return json.dumps({'status': 500, 'message': f"Supabase Error: {response['error']['message']}"})
+            if 'error' in response_info:
+                return jsonify({'status': 500, 'message': f"Supabase Error: {response_info['error']['message']}"})
 
-            if 'data' in response and len(response.data) > 0:
-                return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
-            elif 'data' not in response:
-                return json.dumps({'status': 500, 'message': 'Error updating gender. No data returned from Supabase.'})
+            if 'data' in response_info and len(response_info.data) > 0:
+                return jsonify({'status': 200, 'message': 'Gender updated successfully', 'data': response_info.data[0]})
+            elif 'data' not in response_info:
+                return jsonify({'status': 500, 'message': 'Error updating gender. No data returned from Supabase.'})
             else:
-                # Supabase response indicates success, but no data returned
-                return json.dumps({'status': 500, 'message': 'Error updating gender. No data returned from Supabase.'})
+                return jsonify({'status': 500, 'message': 'Error updating gender. No data returned from Supabase.'})
 
         else:
-            return json.dumps({'status': 400, 'message': 'Invalid request. Missing uid or gender parameter'})
+            return jsonify({'status': 400, 'message': 'Invalid request. Missing email or gender parameter'})
 
     except Exception as e:
         print(f"Error updating gender: {e}")
-        return json.dumps({'status': 500, 'message': f'Internal Server Error: {e}'})
+        return jsonify({'status': 500, 'message': f'Internal Server Error: {e}'})
 
 
 @app.route('/')
