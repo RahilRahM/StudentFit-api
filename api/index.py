@@ -114,7 +114,6 @@ def api_users_update_gender():
         print(f"Error updating gender: {e}")
         return jsonify({'status': 500, 'message': f'Internal Server Error: {e}'})
 
-
 @app.route('/')
 def about():
     return 'Welcome'
