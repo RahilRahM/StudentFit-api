@@ -92,6 +92,7 @@ def api_users_update_gender():
                 return jsonify({'status': 404, 'message': 'User not found'})
 
             # Step 2: Update the gender in the users_info table
+            print(f"Updating gender for user ID: {user_id}, Email: {email}, Gender: {gender}")
             response_info = supabase.table('users_info').upsert(
                 {"user_id": user_id, "gender": gender},
                 on_conflict=['user_id'],
@@ -101,10 +102,13 @@ def api_users_update_gender():
                 return jsonify({'status': 500, 'message': f"Supabase Error: {response_info['error']['message']}"})
 
             if 'data' in response_info and len(response_info.data) > 0:
+                print(f"Gender updated successfully. Response Data: {response_info.data[0]}")
                 return jsonify({'status': 200, 'message': 'Gender updated successfully', 'data': response_info.data[0]})
             elif 'data' not in response_info:
+                print("Error: No data returned from Supabase.")
                 return jsonify({'status': 500, 'message': 'Error updating gender. No data returned from Supabase.'})
             else:
+                print("Error: No data returned from Supabase.")
                 return jsonify({'status': 500, 'message': 'Error updating gender. No data returned from Supabase.'})
 
         else:
@@ -113,6 +117,7 @@ def api_users_update_gender():
     except Exception as e:
         print(f"Error updating gender: {e}")
         return jsonify({'status': 500, 'message': f'Internal Server Error: {e}'})
+
 
 @app.route('/')
 def about():
