@@ -137,8 +137,8 @@ def api_users_update_gender():
             return json.dumps({'status': 200, 'message': 'Gender updated successfully'})
         else:
             return json.dumps({'status': result['status'], 'message': result['error']['message']})
-    except Exception as e:
-        traceback.print_exc(e)
+    except Exception:
+        traceback.print_exc()
 
 @app.route('/')
 def about():
