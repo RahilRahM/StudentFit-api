@@ -110,7 +110,8 @@ def api_users_change_password():
 def api_users_update_gender():
     email = request.form.get('email')
     gender = request.form.get('gender')
-
+    
+    print (email,gender)
     try:
         if not (email and gender):
             return json.dumps({'status': 400, 'message': 'Invalid input'})
