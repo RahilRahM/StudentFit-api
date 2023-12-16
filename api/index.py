@@ -112,7 +112,6 @@ def api_users_update_gender():
     email = request.form.get('email')
     gender = request.form.get('gender')
     
-    print (email,gender)
     try:
         
         if not (email and gender):
@@ -121,7 +120,7 @@ def api_users_update_gender():
         # Print statements for debugging
         print(f"Updating gender for email: {email}, gender: {gender}")
 
-        user_id = supabase.table('users').select('id').ilike('email', email.lower()).execute()
+        user_id = supabase.table('users').select('id').ilike('email', email).execute()
 
         # Print statement for debugging
         print(f"User ID for email {email}: {user_id}")
