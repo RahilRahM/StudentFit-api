@@ -120,8 +120,11 @@ def api_users_update_gender():
         gender = request.form.get('gender')
 
         # Validate inputs
-        if not (email and gender):
-            return json.dumps({'status': 400, 'message': 'Invalid input'})
+        if not (email) :
+            return json.dumps({'status': 400, 'message': 'Invalid email'})
+        
+        if not (gender) :
+            return json.dumps({'status': 400, 'message': 'Invalid gender'})
 
         # Get user id from 'users' table
         user_id = supabase.table('users').select('id').ilike('email', email).execute()
