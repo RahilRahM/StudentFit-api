@@ -64,7 +64,7 @@ def api_users_signup_auth():
     print(str(response))    
     return str(response)
 
-@app.route('/users.updateGender', methods=['GET','POST'])
+@app.route('/users.updateGender', methods=['GET', 'POST'])
 def api_users_update_gender():
     email = request.form.get('email')
     gender = request.form.get('gender')
@@ -74,14 +74,14 @@ def api_users_update_gender():
         return json.dumps({'status': 400, 'message': 'Invalid input'})
 
     # Get user id from 'users' table
-    user_data = supabase.from_table('users').select('id').ilike('email', email).execute().get('data', [])
+    user_data = supabase.table('users').select('id').ilike('email', email).execute().get('data', [])
     if not user_data:
         return json.dumps({'status': 404, 'message': 'User not found'})
 
     user_id = user_data[0]['id']
 
     # Insert new row into 'users_info' table
-    result = supabase.from_table('users_info').upsert([
+    result = supabase.table('users_info').upsert([
         {'user_id': user_id, 'gender': gender}
     ], on_conflict=['user_id'])
 
