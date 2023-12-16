@@ -97,7 +97,7 @@ def api_users_update_gender():
             return json.dumps({'status': 400, 'message': 'Invalid request. Missing uid or gender parameter'})
     except Exception as e:
         print(f"Error updating gender: {e}")
-        return json.dumps({'status': 500, 'message': 'Internal Server Error: {str(e)}'})
+        return json.dumps({'status': 500, 'message': 'Internal Server Error: {e}'})
 
 @app.route('/')
 def about():
