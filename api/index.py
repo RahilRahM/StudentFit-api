@@ -104,7 +104,8 @@ def api_users_change_password():
         return jsonify({'status': 401, 'message': 'Incorrect old password'})
 
     # Update the user's password
-    update_response = supabase.table('users').update({'password': new_password}).eq('email', email).execute()
+    update_response = supabase.table('users').update({'password': new_password}).eq('email', email).single().execute()
+
 
     if len(update_response.data) == 0:
         return jsonify({'status': 500, 'message': 'Error updating password'})
