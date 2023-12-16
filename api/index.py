@@ -115,33 +115,7 @@ def api_users_update_gender():
     print(f"User ID for email {email}: {user_id}")
 
     print (email,gender)
-    try:
-        if not (email and gender):
-            return json.dumps({'status': 400, 'message': 'Invalid input'})
-
-        # Print statements for debugging
-        print(f"Updating gender for email: {email}, gender: {gender}")
-
-        user_id = supabase.table('users').select('id').ilike('email', email.lower()).execute()
-
-        # Print statement for debugging
-        print(f"User ID for email {email}: {user_id}")
-
-        if not user_id:
-            return json.dumps({'status': 404, 'message': 'User not found'})
-
-        result = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
-
-        # Print statements for debugging
-        print(f"Result of updating gender: {result}")
-
-        if result['status'] == 201:
-            return json.dumps({'status': 200, 'message': 'Gender updated successfully'})
-        else:
-            return json.dumps({'status': result['status'], 'message': result['error']['message']})
-    except Exception as e:
-        print(f"Exception in /users.updateGender: {str(e)}")
-        return json.dumps({'status': 500, 'message': 'Internal Server Error'})
+    
 
 @app.route('/')
 def about():
