@@ -120,19 +120,24 @@ def api_users_update_gender():
         gender = request.form.get('gender')
 
         # Validate inputs
-        if not (email) :
-            return json.dumps({'status': 400, 'message': 'Invalid email'})
-        
-        if not (gender) :
-            return json.dumps({'status': 400, 'message': 'Invalid gender'})
+        if not (email and gender):
+            print("Invalid input")
+            return json.dumps({'status': 400, 'message': 'Invalid input'})
+
+        print(f"Received request to update gender for email: {email}, gender: {gender}")
 
         # Get user id from 'users' table
         user_id = supabase.table('users').select('id').ilike('email', email).execute()
         if not user_id:
+            print("User not found")
             return json.dumps({'status': 404, 'message': 'User not found'})
+
+        print(f"User ID found: {user_id}")
 
         # Insert new row into 'users_info' table
         result = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
+
+        print(f"Insert result: {result}")
 
         # Check if the gender update was successful
         if result['status'] == 201:
@@ -144,6 +149,7 @@ def api_users_update_gender():
         # Log the exception for further investigation
         print(f"Exception: {e}")
         return json.dumps({'status': 500, 'message': 'Internal Server Error'})
+
 
 @app.route('/')
 def about():
