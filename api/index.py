@@ -82,16 +82,19 @@ def api_users_update_gender():
         if uid and gender:
             # Update the gender in the users_info table
             response = supabase.table('users_info').upsert(
-                {"user_id": int(uid), "gender": gender},
+                {"user_id": uid, "gender": gender},
                 on_conflict=['user_id'],
             ).execute()
 
             if 'error' in response:
                 return json.dumps({'status': 500, 'message': f"Supabase Error: {response['error']['message']}"})
 
-            if len(response.data) > 0:
+            if 'data' in response and len(response.data) > 0:
                 return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
+            elif 'data' not in response:
+                return json.dumps({'status': 500, 'message': 'Error updating gender. No data returned from Supabase.'})
             else:
+                # Supabase response indicates success, but no data returned
                 return json.dumps({'status': 500, 'message': 'Error updating gender. No data returned from Supabase.'})
 
         else:
@@ -100,7 +103,6 @@ def api_users_update_gender():
     except Exception as e:
         print(f"Error updating gender: {e}")
         return json.dumps({'status': 500, 'message': f'Internal Server Error: {e}'})
-
 
 
 @app.route('/')
