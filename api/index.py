@@ -136,7 +136,7 @@ def api_users_update_gender():
         if result['status'] == 200:
             return json.dumps({'status': 200, 'message': 'Gender updated successfully'})
         else:
-            return json.dumps({'status': 'h', 'message': result['error']['message']})
+            return json.dumps({'status': '500', 'message': result['error']['message']})
     except Exception as e:
         print(f"Exception in /users.updateGender: {str(e)}")
         return json.dumps({'status': 'h', 'message': 'Internal Server Error'})
