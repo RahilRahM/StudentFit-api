@@ -112,28 +112,34 @@ def api_users_change_password():
 
     return jsonify({'status': 200, 'message': 'Password updated successfully'})
 
-@app.route('/users.updateGender', methods=['GET', 'POST'])
 def api_users_update_gender():
-    email = request.form.get('email')
-    gender = request.form.get('gender')
+    try:
+        # Get input parameters from the request
+        email = request.form.get('email')
+        gender = request.form.get('gender')
 
-    # Validate inputs
-    if not (email and gender):
-        return json.dumps({'status': 400, 'message': 'Invalid input'})
+        # Validate inputs
+        if not (email and gender):
+            return json.dumps({'status': 400, 'message': 'Invalid input'})
 
-    # Get user id from 'users' table
-    user_id = supabase.table('users').select('id').ilike('email', email).execute()
-    if not user_id:
-        return json.dumps({'status': 404, 'message': 'User not found'})
+        # Get user id from 'users' table
+        user_id = supabase.table('users').select('id').ilike('email', email).execute()
+        if not user_id:
+            return json.dumps({'status': 404, 'message': 'User not found'})
 
-    # Insert new row into 'users_info' table
-    result = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
+        # Insert new row into 'users_info' table
+        result = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
 
-    # Check if the gender update was successful
-    if result['status'] == 201:
-        return json.dumps({'status': 200, 'message': 'Gender updated successfully'})
-    else:
-        return json.dumps({'status': result['status'], 'message': result['error']['message']})
+        # Check if the gender update was successful
+        if result['status'] == 201:
+            return json.dumps({'status': 200, 'message': 'Gender updated successfully'})
+        else:
+            return json.dumps({'status': result['status'], 'message': result['error']['message']})
+
+    except Exception as e:
+        # Log the exception for further investigation
+        print(f"Exception: {e}")
+        return json.dumps({'status': 500, 'message': 'Internal Server Error'})
 
 @app.route('/')
 def about():
