@@ -86,7 +86,8 @@ def api_users_update_gender():
                 on_conflict=['user_id'],
             ).execute()
 
-            print(response)  # Add this line for debugging
+            if 'error' in response:
+                return json.dumps({'status': 500, 'message': f"Supabase Error: {response['error']['message']}"})
 
             if len(response.data) > 0:
                 return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
