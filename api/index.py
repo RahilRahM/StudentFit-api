@@ -7,7 +7,6 @@ url="https://iqacemdedaqxepotxlbb.supabase.co"
 key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxYWNlbWRlZGFxeGVwb3R4bGJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDI0OTI4OTQsImV4cCI6MjAxODA2ODg5NH0.a8KGVvu2jG9gNlWzi03lMNl7oaIjKZVAf0Qpo6WS5Lk"
 supabase: Client = create_client(url, key)
 
-
 @app.route('/users.signup',methods=['GET','POST'])
 def api_users_signup():
     name = request.form.get('name')
@@ -80,11 +79,16 @@ def api_users_update_gender():
             
             if len(user_response.data) == 0:
                 return json.dumps({'status': 400, 'message': 'User not found'})
+            
+            # Get the user's id
+            user_id = user_response.data[0]['id']
+
             # Update the gender in the users_info table
             response = supabase.table('users_info').upsert(
-                {"user_id": user_response, "gender": gender},
+                {"user_id": user_id, "gender": gender},
                 on_conflict=['user_id'],
             ).execute()
+
             if len(response.data) > 0:
                 return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
             else:
