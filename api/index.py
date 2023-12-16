@@ -66,34 +66,30 @@ def api_users_signup_auth():
 
 @app.route('/users.updateGender', methods=['GET','POST'])
 def api_users_update_gender():
-    data = request.get_json()
     email = request.form.get('email')
     gender = request.form.get('gender')
 
-    print(f"Received request: email={email}, gender={gender}")
-    
-    if email and gender:
-        # Check if the user exists in the users table
-        user_response = supabase.table('users').select("id").eq('email', email).execute()
-        
-        if len(user_response.data) == 0:
-            return json.dumps({'status': 400, 'message': 'User not found'})
-        
-        # Get the user's id
-        user_id = user_response.data[0]['id']
+    # Validate inputs
+    if not (email and gender):
+        return json.dumps({'status': 400, 'message': 'Invalid input'})
 
-        # Update the gender in the users_info table
-        response = supabase.table('users_info').upsert(
-            {"user_id": user_id, "gender": gender},
-            on_conflict=['user_id'],
-        ).execute()
+    # Get user id from 'users' table
+    user_data = supabase.from_table('users').select('id').ilike('email', email).execute().get('data', [])
+    if not user_data:
+        return json.dumps({'status': 404, 'message': 'User not found'})
 
-        if len(response.data) > 0:
-            return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
-        else:
-            return json.dumps({'status': 500, 'message': 'Error updating gender'})
+    user_id = user_data[0]['id']
+
+    # Insert new row into 'users_info' table
+    result = supabase.from_table('users_info').upsert([
+        {'user_id': user_id, 'gender': gender}
+    ], on_conflict=['user_id'])
+
+    # Check if the gender update was successful
+    if result['status'] == 201:
+        return json.dumps({'status': 200, 'message': 'Gender updated successfully'})
     else:
-        return json.dumps({'status': 400, 'message': 'Invalid request. Missing uid or gender parameter'})
+        return json.dumps({'status': result['status'], 'message': result['error']['message']})
 
 
 @app.route('/')
