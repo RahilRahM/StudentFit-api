@@ -73,7 +73,7 @@ def api_users_signup_auth():
     print(str(response))    
     return str(response)
 
-@app.route('/users.updateGender', methods=['POST'])
+@app.route('/users.updateGender', methods=['GET','POST'])
 def api_users_update_gender():
     try:
         email = request.form.get('email')
