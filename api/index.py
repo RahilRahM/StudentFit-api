@@ -86,6 +86,8 @@ def api_users_update_gender():
                 on_conflict=['user_id'],
             ).execute()
 
+            print(response)  # Add this line for debugging
+
             if len(response.data) > 0:
                 return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'data': response.data[0]})
             else:
