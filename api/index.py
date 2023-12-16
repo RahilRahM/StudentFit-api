@@ -114,6 +114,7 @@ def api_users_update_gender():
     
     print (email,gender)
     try:
+        
         if not (email and gender):
             return json.dumps({'status': 400, 'message': 'Invalid input'})
 
@@ -133,7 +134,7 @@ def api_users_update_gender():
         # Print statements for debugging
         print(f"Result of updating gender: {result}")
 
-        if result['status'] == 201:
+        if result['status'] == 200:
             return json.dumps({'status': 200, 'message': 'Gender updated successfully'})
         else:
             return json.dumps({'status': result['status'], 'message': result['error']['message']})
