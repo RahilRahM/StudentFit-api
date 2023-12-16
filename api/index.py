@@ -78,34 +78,34 @@ def api_users_signup_auth():
 @app.route('/users.change_password', methods=['POST'])
 def api_users_change_password():
     email = request.form.get('email')
-    old_password = request.form.get('old_password')
     new_password = request.form.get('new_password')
+    error = False
 
-    if not email or len(email) < 5:
-        return jsonify({'status': 400, 'message': 'Invalid email'})
+    # Validate email
+    if (not email) or (len(email) < 5):  # You can even check with regex
+        error = 'Email needs to be valid'
 
-    if not old_password or len(old_password) < 5:
-        return jsonify({'status': 400, 'message': 'Invalid old password'})
+    # Validate new password
+    if (not error) and ((not new_password) or (len(new_password) < 5)):
+        error = 'Provide a valid new password'
 
-    if not new_password or len(new_password) < 5:
-        return jsonify({'status': 400, 'message': 'Invalid new password'})
+    # Check if user exists
+    if (not error):
+        response = supabase.table('users').select("*").ilike('email', email).execute()
+        if len(response.data) == 0:
+            error = 'User not found'
 
-    user_response = supabase.table('users').select("*").ilike('email', email).execute()
+    # If no error, proceed with password change
+    if (not error):
+        response = supabase.table('users').update({"password": new_password}).ilike('email', email).execute()
+        if response.get('error'):
+            error = 'Failed to update password'
 
-    if len(user_response.data) == 0:
-        return jsonify({'status': 404, 'message': 'User not found'})
-
-    user_data = user_response.data[0]
-
-    if user_data['password'] != old_password:
-        return jsonify({'status': 401, 'message': 'Incorrect old password'})
-
-    update_response = supabase.table('users').update({'password': new_password}).eq('email', email).single().execute()
-
-    if len(update_response.data) == 0:
-        return jsonify({'status': 500, 'message': 'Error updating password'})
+    if error:
+        return jsonify({'status': 500, 'message': error})
 
     return jsonify({'status': 200, 'message': 'Password updated successfully'})
+
 
 @app.route('/users.updateGender', methods=['GET', 'POST'])
 def api_users_update_gender():
