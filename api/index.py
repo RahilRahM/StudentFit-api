@@ -60,7 +60,7 @@ def api_users_login():
             return json.dumps({'status':200,'message':'','data':response.data[0]})
                
     if not error:
-        error='Invalid Email or password'        
+         error='Invalid Email or password'        
     
     return json.dumps({'status':500,'message':error})        
     
@@ -73,34 +73,55 @@ def api_users_signup_auth():
     print(str(response))    
     return str(response)
 
-@app.route('/users.details', methods=['GET','POST'])
-def api_users_details():
-    email = request.form.get('email')
+@app.route('/users.updateGender', methods=['GET','POST'])
+def api_users_update_gender():
+    try:
+        email = request.form.get('email')
+        gender = request.form.get('gender')
 
-    if not email or len(email) < 5:
-        return jsonify({'status': 400, 'message': 'Invalid email'})
+        if email and gender:
+            # Step 1: Retrieve user ID from the users table based on email
+            response_users = supabase.table('users').select('id').ilike('email', email).execute()
 
-    response = supabase.table('users').select("*").ilike('email', email).execute()
+            if 'error' in response_users:
+                return jsonify({'status': 500, 'message': f"Supabase Error: {response_users['error']['message']}"})
 
-    if len(response.data) > 0:
-        return jsonify({'status': 200, 'data': response.data[0]})
-    else:
-        return jsonify({'status': 404, 'message': 'User not found'})
+            user_id = response_users.data[0]['id'] if 'data' in response_users and len(response_users.data) > 0 else None
 
-@app.route('/users.info.insert', methods=['GET','POST'])
-def api_users_info_insert():
-    user_id = request.form.get('user_id')
-    gender = request.form.get('gender')
+            if not user_id:
+                return jsonify({'status': 404, 'message': 'User not found'})
 
-    if not user_id or not gender:
-        return jsonify({'status': 400, 'message': 'Invalid parameters'})
+            # Step 2: Check if a record already exists in the users_info table
+            response_existing_info = supabase.table('users_info').select('user_id').eq('user_id', user_id).execute()
 
-    response = supabase.table('users_info').insert({"user_id": user_id, "gender": gender}).execute()
+            if 'data' in response_existing_info and len(response_existing_info['data']) > 0:
+                # Step 3: Update the gender in the users_info table
+                response_info = supabase.table('users_info').upsert(
+                    {"user_id": user_id, "gender": gender},
+                    on_conflict=['user_id'],
+                ).execute()
+            else:
+                # Step 4: If no existing record, create a new record in users_info
+                response_info = supabase.table('users_info').insert(
+                    {"user_id": user_id, "gender": gender},
+                ).execute()
 
-    if len(response.data) == 0:
-        return jsonify({'status': 200, 'message': 'Gender added successfully'})
-    else:
-        return jsonify({'status': 500, 'message': 'Error adding gender'})
+            if 'error' in response_info:
+                return jsonify({'status': 500, 'message': f"Supabase Error: {response_info['error']['message']}"})
+
+            if 'data' in response_info and len(response_info.data) > 0:
+                return jsonify({'status': 200, 'message': 'Gender updated successfully', 'data': response_info.data[0]})
+            elif 'data' not in response_info:
+                return jsonify({'status': 500, 'message': 'Error updating gender. No data returned from Supabase.'})
+            else:
+                return jsonify({'status': 500, 'message': 'Error updating gender. No data returned from Supabase.'})
+
+        else:
+            return jsonify({'status': 400, 'message': 'Invalid request. Missing email or gender parameter'})
+
+    except Exception as e:
+        print(f"Error updating gender: {e}")
+        return jsonify({'status': 500, 'message': f'Internal Server Error: {e}'})
 
 
 @app.route('/')
