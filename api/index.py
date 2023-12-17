@@ -112,25 +112,14 @@ def api_users_change_password():
 
     return jsonify({'status': 200, 'message': 'Password updated successfully'})
 
-
-
-
 @app.route('/users.insertGender', methods=['GET', 'POST'])
 def api_users_insert_gender():
-    email = request.form.get('email')
+    user_id = request.form.get('user_id')
     gender = request.form.get('gender')
     
     try:
-        if not (email and gender):
+        if not (user_id and gender):
             return json.dumps({'status': 400, 'message': 'Invalid input'})
-
-        user_response = supabase.table('users').select('id').ilike('email', email).execute()
-        user_data = user_response.data
-
-        if not user_data or len(user_data) == 0:
-            return json.dumps({'status': 404, 'message': 'User not found'})
-
-        user_id = user_data[0]['id']
 
         # Check if a row with the given user_id already exists in the users_info table
         result = supabase.table('users_info').select('user_id').eq('user_id', user_id).execute()
