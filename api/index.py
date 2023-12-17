@@ -129,7 +129,7 @@ def api_users_insert_gender():
         # Check if a row with the given user_id already exists in the users_info table
         result = supabase.table('users_info').select('user_id').eq('user_id', user_id).execute()
         if result.data and len(result.data) > 0:
-            return json.dumps({'status': 400, 'message': 'A row with the given user_id already exists'})
+            return json.dumps({'status': 200, 'message': 'A row with the given user_id already exists'})
 
         result = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
 
