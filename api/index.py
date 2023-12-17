@@ -78,6 +78,7 @@ def api_users_signup_auth():
 @app.route('/users.change_password', methods=['POST'])
 def api_users_change_password():
     email = request.form.get('email')
+    current_password = request.form.get('current_password')  # Add this line
     new_password = request.form.get('new_password')
     error = False
 
@@ -85,15 +86,19 @@ def api_users_change_password():
     if (not email) or (len(email) < 5):  # You can even check with regex
         error = 'Email needs to be valid'
 
+    # Validate current password
+    if (not error) and ((not current_password) or (len(current_password) < 5)):
+        error = 'Provide a valid current password'
+
     # Validate new password
     if (not error) and ((not new_password) or (len(new_password) < 5)):
         error = 'Provide a valid new password'
 
-    # Check if user exists
+    # Check if user exists and validate current password
     if (not error):
-        response = supabase.table('users').select("*").ilike('email', email).execute()
+        response = supabase.table('users').select("*").ilike('email', email).eq('password', current_password).execute()
         if len(response.data) == 0:
-            error = 'User not found'
+            error = 'Invalid current password or user not found'
 
     # If no error, proceed with password change
     if (not error):
@@ -105,6 +110,7 @@ def api_users_change_password():
         return jsonify({'status': 500, 'message': error})
 
     return jsonify({'status': 200, 'message': 'Password updated successfully'})
+
 
 
 @app.route('/users.updateGender', methods=['GET', 'POST'])
