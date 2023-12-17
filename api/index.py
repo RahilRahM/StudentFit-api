@@ -77,34 +77,33 @@ def api_users_signup_auth():
 
 @app.route('/users.change_password', methods=['POST'])
 def api_users_change_password():
-    print('Received change password request')
     email = request.form.get('email')
-    current_password = request.form.get('current_password')
+    current_password = request.form.get('current_password')  # Add this line
     new_password = request.form.get('new_password')
-    print(f'Email: {email}, Current Password: {current_password}, New Password: {new_password}')
-    error = None
+    error = False
 
     # Validate email
-    if not email or len(email) < 5:  # You can even check with regex
+    if (not email) or (len(email) < 5):  # You can even check with regex
         error = 'Email needs to be valid'
 
     # Validate current password
-    if not error and (not current_password or len(current_password) < 5):
+    if (not error) and ((not current_password) or (len(current_password) < 5)):
         error = 'Provide a valid current password'
 
     # Validate new password
-    if not error and (not new_password or len(new_password) < 5):
+    if (not error) and ((not new_password) or (len(new_password) < 5)):
         error = 'Provide a valid new password'
 
     # Check if user exists and validate current password
-    if not error:
+    if (not error):
         response = supabase.table('users').select("*").ilike('email', email).eq('password', current_password).execute()
-        if len(response.get('data', [])) == 0:
+        if len(response.data) == 0:
             error = 'Invalid current password or user not found'
 
     # If no error, proceed with password change
-    if not error:
-        response = supabase.table('users').update({"password": new_password}).ilike('email', email).execute()
+    if (not error):
+        # Update the password for the user with the specified email
+        response = supabase.table('users').update({"password": new_password}).eq('email', email).execute()
         if response.get('error'):
             error = 'Failed to update password'
 
