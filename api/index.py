@@ -77,9 +77,11 @@ def api_users_signup_auth():
 
 @app.route('/users.change_password', methods=['POST'])
 def api_users_change_password():
+    print('Received change password request')
     email = request.form.get('email')
     current_password = request.form.get('current_password')
     new_password = request.form.get('new_password')
+    print(f'Email: {email}, Current Password: {current_password}, New Password: {new_password}')
     error = None
 
     # Validate email
@@ -110,6 +112,8 @@ def api_users_change_password():
         return jsonify({'status': 500, 'message': error})
 
     return jsonify({'status': 200, 'message': 'Password updated successfully'})
+
+
 
 
 @app.route('/users.insertGender', methods=['GET', 'POST'])
