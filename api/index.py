@@ -109,6 +109,7 @@ def api_users_change_password():
 
 
 @app.route('/users.insertGender', methods=['GET', 'POST'])
+@app.route('/users.insertGender', methods=['GET', 'POST'])
 def api_users_insert_gender():
     email = request.form.get('email')
     gender = request.form.get('gender')
@@ -132,10 +133,10 @@ def api_users_insert_gender():
 
         result = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
 
-        if result.status_code == 200:
-            return json.dumps({'status': 200, 'message': 'Gender inserted successfully'})
+        if result.error:
+            return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertGender: {result.error.message}"})
         else:
-            return json.dumps({'status': result.status_code, 'message': result.error_message})
+            return json.dumps({'status': 200, 'message': 'Gender inserted successfully'})
         
     except Exception as e:
         return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertGender: {str(e)}"})
