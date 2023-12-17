@@ -135,6 +135,29 @@ def api_users_insert_gender():
     except Exception as e:
         return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertGender: {str(e)}"})
     
+@app.route('/users.insertAge', methods=['GET', 'POST'])
+def api_users_insert_age():
+    user_id = request.form.get('user_id')
+    age = request.form.get('age')
+    
+    try:
+        if not (user_id and age):
+            return json.dumps({'status': 400, 'message': 'Invalid input'})
+
+        # Check if a row with the given user_id already exists in the users_info table
+        result = supabase.table('users_info').select('user_id').eq('user_id', user_id).execute()
+        if result.data and len(result.data) > 0:
+            # If a row with the given user_id already exists, update it
+            result = supabase.table('users_info').update({'age': age}).eq('user_id', user_id).execute()
+        else:
+            # If no row with the given user_id exists, insert a new one
+            result = supabase.table('users_info').insert({'user_id': user_id, 'age': age}).execute()
+
+        return json.dumps({'status': 200, 'message': 'Age updated successfully', 'result': str(result)})
+        
+    except Exception as e:
+        return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertAge: {str(e)}"})
+    
 @app.route('/')
 def about():
     return 'Welcome '
