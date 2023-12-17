@@ -113,7 +113,6 @@ def api_users_change_password():
 
 
 @app.route('/users.insertGender', methods=['GET', 'POST'])
-@app.route('/users.insertGender', methods=['GET', 'POST'])
 def api_users_insert_gender():
     email = request.form.get('email')
     gender = request.form.get('gender')
@@ -133,14 +132,16 @@ def api_users_insert_gender():
         # Check if a row with the given user_id already exists in the users_info table
         result = supabase.table('users_info').select('user_id').eq('user_id', user_id).execute()
         if result.data and len(result.data) > 0:
-            return json.dumps({'status': 200, 'message': 'A row with the given user_id already exists'})
-
-        result = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
+            # If a row with the given user_id already exists, update it
+            result = supabase.table('users_info').update({'gender': gender}).eq('user_id', user_id).execute()
+        else:
+            # If no row with the given user_id exists, insert a new one
+            result = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
 
         if result.error:
             return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertGender: {result.error.message}"})
         else:
-            return json.dumps({'status': 200, 'message': 'Gender inserted successfully'})
+            return json.dumps({'status': 200, 'message': 'Gender updated successfully'})
         
     except Exception as e:
         return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertGender: {str(e)}"})
