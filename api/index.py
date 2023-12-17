@@ -119,32 +119,27 @@ def api_users_update_gender():
             return json.dumps({'status': 400, 'message': 'Invalid input'})
 
         # Print statements for debugging
-        print(f"Updating gender for email: {email}, gender: {gender}")
+        user_response = supabase.table('users').select('id').ilike('email', email).execute()
+        user_data = user_response.data
 
-        user_id = supabase.table('users').select('id').ilike('email', email).execute()
-
-        # Print statement for debugging
-        print(f"User ID for email {email}: {user_id}")
-
-        if not user_id:
+        if not user_data or len(user_data) == 0:
             return json.dumps({'status': 404, 'message': 'User not found'})
 
+        user_id = user_data[0]['id']
+
         result = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
-        result_data = result.data  # Extract data from APIResponse
+        result_data = result.data
 
-# Now you can work with result_data, which should be JSON serializable
-
-        # Print statements for debugging
-        print(f"Result of updating gender: {result_data}")
-
-        if result_data['status'] == 200:
+        if result.status_code == 200:
             return json.dumps({'status': 200, 'message': 'Gender updated successfully'})
         else:
-            return json.dumps({'status': result_data['status'], 'message': result_data['error']['message']})
+            return json.dumps({'status': result.status_code, 'message': result.error_message})
+        
     except Exception as e:
         print(f"Exception in /users.updateGender: {str(e)}")
         return json.dumps({'status': 500, 'message': 'Internal Server Error'})
 
+    
 @app.route('/')
 def about():
     return 'Welcome '
