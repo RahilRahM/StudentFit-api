@@ -74,11 +74,10 @@ def api_users_signup_auth():
     print(str(response))    
     return str(response)
 
-
 @app.route('/users.change_password', methods=['POST'])
 def api_users_change_password():
     email = request.form.get('email')
-    current_password = request.form.get('current_password')  # Add this line
+    current_password = request.form.get('current_password')
     new_password = request.form.get('new_password')
     error = False
 
@@ -95,15 +94,18 @@ def api_users_change_password():
         error = 'Provide a valid new password'
 
     # Check if user exists and validate current password
-    if (not error):
+    if not error:
         response = supabase.table('users').select("*").ilike('email', email).eq('password', current_password).execute()
         if len(response.data) == 0:
             error = 'Invalid current password or user not found'
 
     # If no error, proceed with password change
-    if (not error):
+    if not error:
+        # Hash the new password before updating it
+        hashed_new_password = pbkdf2_sha256.hash(new_password)
+
         # Update the password for the user with the specified email
-        response = supabase.table('users').update({"password": new_password}).eq('email', email).execute()
+        response = supabase.table('users').update({"password": hashed_new_password}).eq('email', email).execute()
         if response.get('error'):
             error = 'Failed to update password'
 
