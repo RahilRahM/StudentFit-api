@@ -121,33 +121,27 @@ def api_users_insert_gender():
         if not (email and gender):
             return json.dumps({'status': 400, 'message': 'Invalid input'})
 
-        user_data, error = supabase.table('users').select('id').ilike('email', email).execute()
+        user_response = supabase.table('users').select('id').ilike('email', email).execute()
+        user_data = user_response.data
 
-        if error or not user_data or len(user_data) == 0:
+        if not user_data or len(user_data) == 0:
             return json.dumps({'status': 404, 'message': 'User not found'})
 
         user_id = user_data[0]['id']
 
         # Check if a row with the given user_id already exists in the users_info table
-        result_data, error = supabase.table('users_info').select('user_id').eq('user_id', user_id).execute()
-        if error:
-            return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertGender: {error.message}"})
-
-        if result_data and len(result_data) > 0:
+        result = supabase.table('users_info').select('user_id').eq('user_id', user_id).execute()
+        if result.data and len(result.data) > 0:
             # If a row with the given user_id already exists, update it
-            _, error = supabase.table('users_info').update({'gender': gender}).eq('user_id', user_id).execute()
+            result = supabase.table('users_info').update({'gender': gender}).eq('user_id', user_id).execute()
         else:
             # If no row with the given user_id exists, insert a new one
-            _, error = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
+            result = supabase.table('users_info').insert({'user_id': user_id, 'gender': gender}).execute()
 
-        if error:
-            return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertGender: {error.message}"})
-        else:
-            return json.dumps({'status': 200, 'message': 'Gender updated successfully'})
+        return json.dumps({'status': 200, 'message': 'Gender updated successfully', 'result': str(result)})
         
     except Exception as e:
         return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertGender: {str(e)}"})
-
     
 @app.route('/')
 def about():
