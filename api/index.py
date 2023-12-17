@@ -136,8 +136,7 @@ def api_users_update_gender():
             return json.dumps({'status': result.status_code, 'message': result.error_message})
         
     except Exception as e:
-        print(f"Exception in /users.updateGender: {str(e)}")
-        return json.dumps({'status': 500, 'message': 'Internal Server Error'})
+        return json.dumps({'status': 500, 'message': 'Internal Server Error, Exception in /users.updateGender: {str(e)}'})
 
     
 @app.route('/')
