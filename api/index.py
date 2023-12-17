@@ -114,14 +114,13 @@ def api_users_change_password():
                 error = 'Failed to update password'
 
         if error:
-            return jsonify({'status': 500, 'message': error})
+            return jsonify({'status': 500, 'message': error}), 500
 
         return jsonify({'status': 200, 'message': 'Password updated successfully'})
 
     except Exception as e:
-        # Log the exception
-        print(f'Exception during password change: {e}')
-        return jsonify({'status': 500, 'message': 'Internal Server Error'})
+        print(f"An error occurred: {str(e)}")
+        return jsonify({'status': 500, 'message': 'Internal Server Error'}), 500
 
 @app.route('/users.insertGender', methods=['GET', 'POST'])
 def api_users_insert_gender():
