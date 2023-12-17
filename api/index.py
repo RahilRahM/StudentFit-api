@@ -78,27 +78,31 @@ def api_users_signup_auth():
 @app.route('/users.change_password', methods=['POST'])
 def api_users_change_password():
     email = request.form.get('email')
+    current_password = request.form.get('current_password')
     new_password = request.form.get('new_password')
-    error = False
+    error = None
 
     # Validate email
-    if (not email) or (len(email) < 5):  # You can even check with regex
+    if not email or len(email) < 5:  # You can even check with regex
         error = 'Email needs to be valid'
 
+    # Validate current password
+    if not error and (not current_password or len(current_password) < 5):
+        error = 'Provide a valid current password'
+
     # Validate new password
-    if (not error) and ((not new_password) or (len(new_password) < 5)):
+    if not error and (not new_password or len(new_password) < 5):
         error = 'Provide a valid new password'
 
-    # Check if user exists
-    if (not error):
-        response = supabase.table('User').select("*").ilike('Email', email).execute()
-        if len(response.get('data')) == 0:
-            error = 'User not found'
+    # Check if user exists and validate current password
+    if not error:
+        response = supabase.table('users').select("*").ilike('email', email).eq('password', current_password).execute()
+        if len(response.get('data', [])) == 0:
+            error = 'Invalid current password or user not found'
 
     # If no error, proceed with password change
-    if (not error):
-        user_id = response.get('data')[0]['UserID']  # Assuming UserID is the primary key
-        response = supabase.table('User').update({"Password": new_password}).eq('UserID', user_id).execute()
+    if not error:
+        response = supabase.table('users').update({"password": new_password}).ilike('email', email).execute()
         if response.get('error'):
             error = 'Failed to update password'
 
