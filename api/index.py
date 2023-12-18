@@ -190,7 +190,7 @@ def api_users_insert_height():
     except Exception as e:
         return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertHeight: {str(e)}"})
     
-@app.route('/users.insertWeightRecord', methods=['POST'])
+@app.route('/users.insertWeight', methods=['POST','GET'])
 def api_users_insert_weight_record():
     user_id = request.form.get('user_id')
     weight = request.form.get('weight')
