@@ -195,7 +195,7 @@ def api_users_insert_height():
 def api_users_insert_weight_record():
     user_id = request.form.get('user_id')
     weight = request.form.get('weight')
-    recorded_at = datetime.now().isoformat()
+    recorded_at = datetime.now().toISOString()
 
     try:
         if not (user_id and weight):
