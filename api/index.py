@@ -11,7 +11,7 @@ url="https://iqacemdedaqxepotxlbb.supabase.co"
 key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxYWNlbWRlZGFxeGVwb3R4bGJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDI0OTI4OTQsImV4cCI6MjAxODA2ODg5NH0.a8KGVvu2jG9gNlWzi03lMNl7oaIjKZVAf0Qpo6WS5Lk"
 supabase: Client = create_client(url, key)
 
-@app.route('/users.signup',methods=['GET','POST'])
+@app.route('/users.signup', methods=['POST'])
 def api_users_signup():
     name = request.form.get('name')
     email = request.form.get('email')
@@ -19,16 +19,19 @@ def api_users_signup():
     error = False
 
     # Validate name
-    if (not name) or (len(name) < 2):  # You can adjust the length requirement
+    if (not name) or (len(name) < 2):
         error = 'Name needs to be valid'
 
     # Validate email
-    if (not error) and ((not email) or (len(email) < 5)):  # You can even check with regex
+    if (not error) and ((not email) or (len(email) < 5)):
         error = 'Email needs to be valid'
 
     # Validate password
     if (not error) and ((not password) or (len(password) < 5)):
         error = 'Provide a valid password'
+
+    # Hash the password
+    hashed_password = generate_password_hash(password, method='sha256')
 
     # Check if user already exists
     if (not error):
@@ -38,7 +41,7 @@ def api_users_signup():
 
     # If no error, proceed with sign-up
     if (not error):
-        response = supabase.table('users').insert({"name": name, "email": email, "password": password}).execute()
+        response = supabase.table('users').insert({"name": name, "email": email, "password": hashed_password}).execute()
         print(str(response.data))
         if len(response.data) == 0:
             error = 'Error creating the user'
