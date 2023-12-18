@@ -81,7 +81,7 @@ bcrypt = Bcrypt(app)
 def api_users_change_password():
     try:
         email = request.form.get('email')
-        current_password = request.form.get('current_password')
+        current_password = request.form.get('current_password')  
         new_password = request.form.get('new_password')
         error = False
 
@@ -99,17 +99,21 @@ def api_users_change_password():
 
         # Check if user exists and validate current password
         if (not error):
+            # Assuming passwords are hashed in the database
             response = supabase.table('users').select("*").ilike('email', email).execute()
-            if len(response.data) == 0 or not bcrypt.check_password_hash(response.data[0]['password'], current_password):
+            user_data = response.data[0] if response.data else None
+
+            if not user_data or not bcrypt.check_password_hash(user_data.get('password'), current_password):
                 error = 'Invalid current password or user not found'
 
         # If no error, proceed with password change
-        if not error:
-            # Hash the new password
-            hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
-            
+        if (not error):
+            # Hash the new password before updating
+            hashed_new_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+
             # Update the password for the user with the specified email
-            response = supabase.table('users').update({"password": hashed_password}).eq('email', email).execute()
+            response = supabase.table('users').update({"password": hashed_new_password}).eq('email', email).execute()
+
             if response.get('error'):
                 error = 'Failed to update password'
 
@@ -121,6 +125,7 @@ def api_users_change_password():
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         return jsonify({'status': 500, 'message': 'Internal Server Error'}), 500
+
 
 @app.route('/users.insertGender', methods=['GET', 'POST'])
 def api_users_insert_gender():
