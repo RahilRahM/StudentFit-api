@@ -2,9 +2,10 @@ from flask import Flask, jsonify, request
 import json
 from supabase import create_client, Client
 import traceback
+from flask_bcrypt import Bcrypt
 
 
-
+bcrypt = Bcrypt(app)
 app = Flask(__name__)
 
 url="https://iqacemdedaqxepotxlbb.supabase.co"
@@ -68,8 +69,8 @@ def api_users_login():
         if len(response.data) > 0:
             user = response.data[0]
 
-            # Compare hashed password
-            if check_password_hash(user['password'], password):  # Compare hashed passwords
+            # Compare hashed password using bcrypt
+            if bcrypt.check_password_hash(user['password'], password):
                 return json.dumps({'status': 200, 'message': '', 'data': user})
             else:
                 error = 'Invalid Email or password'
@@ -78,14 +79,6 @@ def api_users_login():
         return json.dumps({'status': 500, 'message': error})
 
     return json.dumps({'status': 500, 'message': 'Invalid Email or password'})
-
-@app.route('/users.signup.auth',methods=['GET','POST'])
-def api_users_signup_auth():
-    email= request.args.get('email')
-    password= request.args.get('password')
-    response = supabase.auth.sign_up({"email": email, "password": password})        
-    print(str(response))    
-    return str(response)
 
 
 
