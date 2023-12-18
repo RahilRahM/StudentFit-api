@@ -207,6 +207,25 @@ def api_users_insert_weight_record():
         
     except Exception as e:
         return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertWeight: {str(e)}"})
+
+
+@app.route('/users.insertWaterIntake', methods=['POST'])
+def api_users_insert_water_intake():
+    user_id = request.form.get('user_id')
+    water_intake = float(request.form.get('water_intake'))
+
+    try:
+        if not (user_id and water_intake):
+            return json.dumps({'status': 400, 'message': 'Invalid input'})
+
+        # Insert a new row with the given user_id and water_intake
+        result = supabase.table('water_intake_records').insert({'user_id': user_id, 'water_intake': water_intake}).execute()
+
+        return json.dumps({'status': 200, 'message': 'Water intake recorded successfully', 'result': str(result)})
+
+    except Exception as e:
+        return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertWaterIntake: {str(e)}"})
+ 
     
 @app.route('/')
 def about():
