@@ -195,14 +195,14 @@ def api_users_insert_height():
 def api_users_insert_weight_record():
     user_id = request.form.get('user_id')
     weight = request.form.get('weight')
-    recorded_at = datetime.now().isoformat()
+    recorded_at = datetime.now()
 
     try:
         if not (user_id and weight):
             return json.dumps({'status': 400, 'message': 'Invalid input'})
 
         # Insert a new row with the given user_id, weight, and the current timestamp
-        result = supabase.table('weight_record').insert({'user_id': user_id, 'recorded_at': recorded_at, 'weight': weight}).execute()
+        result = supabase.table('weight_record').insert({'user_id': user_id, 'recorded_at': recorded_at.isoformat() , 'weight': weight}).execute()
 
         return json.dumps({'status': 200, 'message': 'Weight record inserted successfully', 'result': str(result)})
         
