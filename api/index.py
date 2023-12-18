@@ -107,7 +107,19 @@ def api_users_change_password():
 
 
 
+@app.route('/isEmailExists', methods=['GET'])
+def is_email_exists():
+    email = request.args.get('email')
 
+    if not email or len(email) < 5:
+        return json.dumps({'status': 400, 'message': 'Email needs to be valid'})
+
+    response = supabase.table('users').select("*").ilike('email', email).execute()
+
+    if len(response.data) > 0:
+        return json.dumps({'status': 200, 'message': 'Email exists'})
+    else:
+        return json.dumps({'status': 404, 'message': 'Email does not exist'})
 
 
 
