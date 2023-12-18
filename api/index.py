@@ -121,19 +121,6 @@ def is_email_exists():
     else:
         return json.dumps({'status': 404, 'message': 'Email does not exist'})
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 @app.route('/users.insertGender', methods=['GET', 'POST'])
 def api_users_insert_gender():
     user_id = request.form.get('user_id')
