@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 import json
 from supabase import create_client, Client
 import traceback
+from werkzeug.security import check_password_hash
 
 
 app = Flask(__name__)
@@ -67,7 +68,7 @@ def api_users_login():
             user = response.data[0]
 
             # Compare hashed password
-            if user['password'] == password:  # Replace with your hash comparison logic
+            if check_password_hash(user['password'], password):  # Compare hashed passwords
                 return json.dumps({'status': 200, 'message': '', 'data': user})
             else:
                 error = 'Invalid Email or password'
@@ -76,7 +77,6 @@ def api_users_login():
         return json.dumps({'status': 500, 'message': error})
 
     return json.dumps({'status': 500, 'message': 'Invalid Email or password'})
-
 
 @app.route('/users.signup.auth',methods=['GET','POST'])
 def api_users_signup_auth():
