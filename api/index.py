@@ -209,7 +209,7 @@ def api_users_insert_weight_record():
         return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertWeight: {str(e)}"})
 
 
-@app.route('/users.insertWaterIntake', methods=['POST'])
+@app.route('/users.insertWaterIntake', methods=['GET', 'POST'])
 def api_users_insert_water_intake():
     user_id = request.form.get('user_id')
     water_intake = float(request.form.get('water_intake'))
