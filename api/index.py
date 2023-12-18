@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 import json
 from supabase import create_client, Client
 import traceback
-from flask_bcrypt import Bcrypt
+
 
 app = Flask(__name__)
 
@@ -74,57 +74,6 @@ def api_users_signup_auth():
     response = supabase.auth.sign_up({"email": email, "password": password})        
     print(str(response))    
     return str(response)
-
-bcrypt = Bcrypt(app)
-
-@app.route('/users.change_password', methods=['POST'])
-def api_users_change_password():
-    try:
-        email = request.form.get('email')
-        current_password = request.form.get('current_password')  
-        new_password = request.form.get('new_password')
-        error = False
-
-        # Validate email
-        if (not email) or (len(email) < 5):
-            error = 'Email needs to be valid'
-
-        # Validate current password
-        if (not error) and ((not current_password) or (len(current_password) < 5)):
-            error = 'Provide a valid current password'
-
-        # Validate new password
-        if (not error) and ((not new_password) or (len(new_password) < 5)):
-            error = 'Provide a valid new password'
-
-        # Check if user exists and validate current password
-        if (not error):
-            # Assuming passwords are hashed in the database
-            response = supabase.table('users').select("*").ilike('email', email).execute()
-            user_data = response.data[0] if response.data else None
-
-            if not user_data or not bcrypt.check_password_hash(user_data.get('password'), current_password):
-                error = 'Invalid current password or user not found'
-
-        # If no error, proceed with password change
-        if (not error):
-            # Hash the new password before updating
-            hashed_new_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
-
-            # Update the password for the user with the specified email
-            response = supabase.table('users').update({"password": hashed_new_password}).eq('email', email).execute()
-
-            if response.get('error'):
-                error = 'Failed to update password'
-
-        if error:
-            return jsonify({'status': 500, 'message': error}), 500
-
-        return jsonify({'status': 200, 'message': 'Password updated successfully'})
-
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        return jsonify({'status': 500, 'message': 'Internal Server Error'}), 500
 
 
 @app.route('/users.insertGender', methods=['GET', 'POST'])
