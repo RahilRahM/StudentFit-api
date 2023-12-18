@@ -207,7 +207,7 @@ def api_users_insert_weight_record():
         return json.dumps({'status': 200, 'message': 'Weight record inserted successfully', 'result': str(result)})
         
     except Exception as e:
-        return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertWeightRecord: {str(e)}"})
+        return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertWeightRecord: {e}"})
     
 @app.route('/')
 def about():
