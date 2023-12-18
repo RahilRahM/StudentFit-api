@@ -112,14 +112,14 @@ def is_email_exists():
     email = request.args.get('email')
 
     if not email or len(email) < 5:
-        return json.dumps({'status': 400, 'message': 'Email needs to be valid'})
+        return json.dumps({'status': 400, 'message': 'Email needs to be valid'}), 400
 
     response = supabase.table('users').select("*").ilike('email', email).execute()
 
     if len(response.data) > 0:
-        return json.dumps({'status': 200, 'message': 'Email exists'})
+        return json.dumps({'status': 200, 'message': 'Email exists'}), 200
     else:
-        return json.dumps({'status': 404, 'message': 'Email does not exist'})
+        return json.dumps({'status': 404, 'message': 'Email does not exist'}), 404
 
 @app.route('/users.insertGender', methods=['GET', 'POST'])
 def api_users_insert_gender():
