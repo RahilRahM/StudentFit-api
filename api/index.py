@@ -55,18 +55,28 @@ def api_users_login():
 
     if (not email) or (len(email) < 5):
         error = 'Email needs to be valid'
+
     if (not error) and ((not password) or (len(password) < 5)):
         error = 'Provide a password'
 
-    if (not error):
-        response = supabase.table('users').select("*").ilike('email', email).eq('password', password).execute()
-        if len(response.data) > 0:
-            return json.dumps({'status': 200, 'message': '', 'data': response.data[0]})
-
     if not error:
-        error = 'Invalid Email or password'
+        # Fetch user by email
+        response = supabase.table('users').select("*").ilike('email', email).execute()
 
-    return json.dumps({'status': 500, 'message': error})
+        if len(response.data) > 0:
+            user = response.data[0]
+
+            # Compare hashed password
+            if user['password'] == password:  # Replace with your hash comparison logic
+                return json.dumps({'status': 200, 'message': '', 'data': user})
+            else:
+                error = 'Invalid Email or password'
+
+    if error:
+        return json.dumps({'status': 500, 'message': error})
+
+    return json.dumps({'status': 500, 'message': 'Invalid Email or password'})
+
 
 @app.route('/users.signup.auth',methods=['GET','POST'])
 def api_users_signup_auth():
