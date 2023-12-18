@@ -46,7 +46,7 @@ def api_users_signup():
         return json.dumps({'status': 200, 'message': error})
 
     return json.dumps({'status': 200, 'message': '', 'data': response.data[0]})
-
+    
 @app.route('/users.login', methods=['POST'])
 def api_users_login():
     email = request.form.get('email')
