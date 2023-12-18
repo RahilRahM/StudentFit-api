@@ -76,6 +76,49 @@ def api_users_signup_auth():
     return str(response)
 
 
+
+@app.route('/users.changePassword', methods=['PUT'])
+def api_users_change_password():
+    email = request.form.get('email')
+    new_password = request.form.get('newPassword')
+    error = False
+
+    # Validate email
+    if (not email) or (len(email) < 5):
+        error = 'Email needs to be valid'
+
+    # Validate new password
+    if (not error) and ((not new_password) or (len(new_password) < 5)):
+        error = 'Provide a valid new password'
+
+    # Update the password in the Supabase database
+    if not error:
+        response = supabase.table('users').update({"password": new_password}).ilike('email', email).execute()
+        if len(response.data) == 0:
+            error = 'Error updating the password'
+
+    if error:
+        return json.dumps({'status': 400, 'message': error})
+
+    return json.dumps({'status': 200, 'message': 'Password updated successfully'})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @app.route('/users.insertGender', methods=['GET', 'POST'])
 def api_users_insert_gender():
     user_id = request.form.get('user_id')
