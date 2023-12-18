@@ -190,6 +190,23 @@ def api_users_insert_height():
     except Exception as e:
         return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertHeight: {str(e)}"})
     
+@app.route('/users.insertWeightRecord', methods=['POST'])
+def api_users_insert_weight_record():
+    user_id = request.form.get('user_id')
+    weight = request.form.get('weight')
+
+    try:
+        if not (user_id and weight):
+            return json.dumps({'status': 400, 'message': 'Invalid input'})
+
+        # Insert a new row with the given user_id, weight, and the current timestamp
+        result = supabase.table('weight_record').insert({'user_id': user_id, 'weight': weight}).execute()
+
+        return json.dumps({'status': 200, 'message': 'Weight record inserted successfully', 'result': str(result)})
+        
+    except Exception as e:
+        return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertWeightRecord: {str(e)}"})
+    
 @app.route('/')
 def about():
     return 'Welcome '
