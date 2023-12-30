@@ -233,8 +233,8 @@ def api_users_get_user_info():
         # Fetch user info from the users_info table
         user_info_response = supabase.table('users_info').select("*").eq('user_id', user_id).execute()
 
-        # Fetch user weight records from the weight_records table
-        weight_records_response = supabase.table('weight_records').select("*").eq('user_id', user_id).execute()
+        # Fetch user latest weight from the weight_records table
+        weight_records_response = supabase.table('weight_records').select("*").eq('user_id', user_id).order('recorded_at', ascending=False).limit(1).execute()
 
         if len(user_info_response.data) == 0 and len(weight_records_response.data) == 0:
             return json.dumps({'status': 404, 'message': 'User info not found'})
@@ -243,7 +243,7 @@ def api_users_get_user_info():
             'status': 200, 
             'message': 'User info fetched successfully', 
             'user_info': user_info_response.data, 
-            'weight_records': weight_records_response.data
+            'weight': weight_records_response.data
         })
 
     except Exception as e:
