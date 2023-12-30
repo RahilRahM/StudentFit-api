@@ -4,8 +4,6 @@ from supabase import create_client, Client
 import traceback
 from datetime import datetime
 
-
-
 app = Flask(__name__)
 
 url="https://iqacemdedaqxepotxlbb.supabase.co"
@@ -68,7 +66,7 @@ def api_users_login():
             user = response.data[0]
 
             # Compare hashed password
-            if user['password'] == password:  # Replace with your hash comparison logic
+            if user['password'] == password: 
                 return json.dumps({'status': 200, 'message': '', 'data': user})
             else:
                 error = 'Invalid Email or password'
@@ -77,8 +75,6 @@ def api_users_login():
         return json.dumps({'status': 500, 'message': error})
 
     return json.dumps({'status': 500, 'message': 'Invalid Email or password'})
-
-
 
 
 @app.route('/users.changePassword', methods=['PUT'])
@@ -226,7 +222,33 @@ def api_users_insert_water_intake():
     except Exception as e:
         return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.insertWaterIntake: {str(e)}"})
  
-    
+@app.route('/users.getUserInfo', methods=['POST','GET'])
+def api_users_get_user_info():
+    user_id = request.args.get('user_id')
+
+    if not user_id:
+        return json.dumps({'status': 400, 'message': 'Invalid input'})
+
+    try:
+        # Fetch user info from the users_info table
+        user_info_response = supabase.table('users_info').select("*").eq('user_id', user_id).execute()
+
+        # Fetch user weight records from the weight_records table
+        weight_records_response = supabase.table('weight_records').select("*").eq('user_id', user_id).execute()
+
+        if len(user_info_response.data) == 0 and len(weight_records_response.data) == 0:
+            return json.dumps({'status': 404, 'message': 'User info not found'})
+
+        return json.dumps({
+            'status': 200, 
+            'message': 'User info fetched successfully', 
+            'user_info': user_info_response.data, 
+            'weight_records': weight_records_response.data
+        })
+
+    except Exception as e:
+        return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.getUserInfo: {str(e)}"})
+      
 @app.route('/')
 def about():
     return 'Welcome '
