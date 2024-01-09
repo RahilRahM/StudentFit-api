@@ -251,29 +251,24 @@ def api_users_get_user_info():
 
 
 
-@app.route('/users.insertWaterIntake', methods=['POST'])
-def insert_water_intake():
+@app.route('/users/insertWaterIntake', methods=['POST'])
+def api_users_insert_water_intake():
     data = request.json
     user_id = data.get('user_id')
-    water_intake = data.get('water_intake')
-
-    if not user_id or not water_intake:
-        return jsonify({'status': 'error', 'message': 'Missing user_id or water_intake'}), 400
+    intake = data.get('intake')
 
     try:
-        result = supabase.table('water_intake_records').insert({
+        result = supabase.table('water_intake').insert({
             'user_id': user_id,
-            'water_intake': water_intake,
-            'date_recorded': datetime.now()
+            'intake': intake
         }).execute()
 
         if result.error:
             return jsonify({'status': 'error', 'message': str(result.error)}), 500
-
-        return jsonify({'status': 'success', 'data': result.data}), 200
-
+        return jsonify({'status': 'success', 'message': 'Water intake recorded successfully'}), 200
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
       
 @app.route('/')
 def about():
