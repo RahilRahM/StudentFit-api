@@ -250,25 +250,6 @@ def api_users_get_user_info():
         return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.getUserInfo: {str(e)}"})
 
 
-
-@app.route('/users/insertWaterIntake', methods=['POST'])
-def api_users_insert_water_intake():
-    data = request.json
-    user_id = data.get('user_id')
-    intake = data.get('intake')
-
-    try:
-        result = supabase.table('water_intake').insert({
-            'user_id': user_id,
-            'intake': intake
-        }).execute()
-
-        if result.error:
-            return jsonify({'status': 'error', 'message': str(result.error)}), 500
-        return jsonify({'status': 'success', 'message': 'Water intake recorded successfully'}), 200
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
       
 @app.route('/')
 def about():
