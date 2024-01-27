@@ -249,6 +249,33 @@ def api_users_get_user_info():
     except Exception as e:
         return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.getUserInfo: {str(e)}"})
 
+@app.route('/users.update', methods=['PUT'])
+def api_users_update():
+    try:
+        user_data = request.json
+        user_id = user_data.get('id')
+        new_name = user_data.get('name')
+        new_email = user_data.get('email')
+        new_password = user_data.get('password')  # Assuming you also want to update the password
+
+        # Validate input data
+        if not user_id or not new_name or not new_email or not new_password:
+            return json.dumps({'status': 400, 'message': 'Invalid input'}), 400
+
+        # Update user details in Supabase
+        response = supabase.table('users').update({
+            'name': new_name,
+            'email': new_email,
+            'password': new_password
+        }).eq('id', user_id).execute()
+
+        if response.error:
+            return json.dumps({'status': 500, 'message': str(response.error)}), 500
+
+        return json.dumps({'status': 200, 'message': 'User updated successfully'}), 200
+
+    except Exception as e:
+        return json.dumps({'status': 500, 'message': f'Internal Server Error: {str(e)}'}), 500
 
       
 @app.route('/')
