@@ -256,17 +256,15 @@ def api_users_update():
         user_id = user_data.get('id')
         new_name = user_data.get('name')
         new_email = user_data.get('email')
-        new_password = user_data.get('password')  # Assuming you also want to update the password
 
         # Validate input data
-        if not user_id or not new_name or not new_email or not new_password:
+        if not user_id or not new_name or not new_email:
             return json.dumps({'status': 400, 'message': 'Invalid input'}), 400
 
         # Update user details in Supabase
         response = supabase.table('users').update({
             'name': new_name,
-            'email': new_email,
-            'password': new_password
+            'email': new_email
         }).eq('id', user_id).execute()
 
         if response.error:
@@ -276,6 +274,7 @@ def api_users_update():
 
     except Exception as e:
         return json.dumps({'status': 500, 'message': f'Internal Server Error: {str(e)}'}), 500
+
 
       
 @app.route('/')
