@@ -251,9 +251,8 @@ def api_users_get_user_info():
 @app.route('/users.update', methods=['POST'])
 def api_users_update():
     try:
-        user_data = request.get_json()  # Make sure you're correctly parsing JSON
-        user_id = user_data.get('id')
-        new_name = user_data.get('name')
+        user_id = request.form.get('user_id')
+        new_name = request.form.get('name')
 
         # Validate input data
         if not user_id:
@@ -264,7 +263,7 @@ def api_users_update():
         # Update user details in Supabase
         response = supabase.table('users').update({
             'name': new_name
-        }).eq('id', user_id).execute()
+        }).ilike('id', user_id).execute()
 
         if response.error:
             return jsonify({'status': 500, 'message': str(response.error)}), 500
