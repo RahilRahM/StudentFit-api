@@ -264,7 +264,7 @@ def api_users_update():
         # Update user details in Supabase
         response = supabase.table('users').update({
             'name': new_name
-        }).ilike('id', user_id).execute()
+        }).eq('id', user_id).execute()
 
         if response.error:
             return jsonify({'status': 500, 'message': str(response.error)}), 500
