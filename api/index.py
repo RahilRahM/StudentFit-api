@@ -248,7 +248,7 @@ def api_users_get_user_info():
 
     except Exception as e:
         return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.getUserInfo: {str(e)}"})
-@app.route('/users.update', methods=['PUT'])
+@app.route('/users.update', methods=['POST'])
 def api_users_update():
     try:
         user_data = request.get_json()  # Make sure you're correctly parsing JSON
