@@ -249,11 +249,11 @@ def api_users_get_user_info():
     except Exception as e:
         return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.getUserInfo: {str(e)}"})
     
-@app.route('/users.update', methods=['POST','GET'])
+@app.route('/users.update', methods=['POST'])
 def api_users_update():
     try:
-        user_id = request.json.get('user_id')
-        new_name = request.json.get('name')
+        user_id = request.form.get('user_id')
+        new_name = request.form.get('name')
 
         # Validate input data
         if not user_id:
@@ -273,7 +273,6 @@ def api_users_update():
 
     except Exception as e:
         return jsonify({'status': 500, 'message': f'Internal Server Error: {str(e)}'}), 500
-
       
 @app.route('/')
 def about():
