@@ -248,32 +248,32 @@ def api_users_get_user_info():
 
     except Exception as e:
         return json.dumps({'status': 500, 'message': f"Internal Server Error, Exception in /users.getUserInfo: {str(e)}"})
-
 @app.route('/users.update', methods=['PUT'])
 def api_users_update():
     try:
-        user_data = request.json
+        user_data = request.get_json()  # Make sure you're correctly parsing JSON
         user_id = user_data.get('id')
         new_name = user_data.get('name')
-        new_email = user_data.get('email')
 
         # Validate input data
-        if not user_id or not new_name or not new_email:
-            return json.dumps({'status': 400, 'message': 'Invalid input'}), 400
+        if not user_id:
+            return jsonify({'status': 400, 'message': 'User ID is required'}), 400
+        if not new_name:
+            return jsonify({'status': 400, 'message': 'New name is required'}), 400
 
         # Update user details in Supabase
         response = supabase.table('users').update({
-            'name': new_name,
-            'email': new_email
+            'name': new_name
         }).eq('id', user_id).execute()
 
         if response.error:
-            return json.dumps({'status': 500, 'message': str(response.error)}), 500
+            return jsonify({'status': 500, 'message': str(response.error)}), 500
 
-        return json.dumps({'status': 200, 'message': 'User updated successfully'}), 200
+        return jsonify({'status': 200, 'message': 'User updated successfully', 'data': response.data}), 200
 
     except Exception as e:
-        return json.dumps({'status': 500, 'message': f'Internal Server Error: {str(e)}'}), 500
+        return jsonify({'status': 500, 'message': f'Internal Server Error: {str(e)}'}), 500
+
 
 
       
