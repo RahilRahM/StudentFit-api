@@ -273,6 +273,26 @@ def api_users_update():
 
     except Exception as e:
         return jsonify({'status': 500, 'message': f'Internal Server Error: {str(e)}'}), 500
+
+
+@app.route('/getRecipes', methods=['GET'])
+def get_recipes():
+    try:
+        # Fetch all recipe data from the 'recipes' table
+        response = supabase.table('recipes').select('*').execute()
+
+        # Check if the response was successful
+        if response.status_code == 200:
+            # Return the data as JSON
+            return jsonify({'status': 200, 'data': response.data}), 200
+        else:
+            # If the response was not successful, return the error
+            return jsonify({'status': response.status_code, 'message': 'Failed to fetch recipes'}), response.status_code
+
+    except Exception as e:
+        # If an exception occurred, return an error message
+        return jsonify({'status': 500, 'message': f'Internal Server Error: {str(e)}'}), 500
+
       
 @app.route('/')
 def about():
