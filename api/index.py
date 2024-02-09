@@ -275,24 +275,24 @@ def api_users_update():
         return jsonify({'status': 500, 'message': f'Internal Server Error: {str(e)}'}), 500
 
 
-@app.route('/recipes', methods=['GET'])
+@app.route('/getRecipes', methods=['GET'])
 def get_recipes():
+    image_id = request.args.get('image_id')  # Retrieve the image_id query parameter
+    if not image_id:
+        return jsonify({'status': 'error', 'message': 'Image ID not provided'}), 400
+
     try:
-        # Fetch recipe data from Supabase
-        response = supabase.from_('recipes').select('*').execute()
+        # Fetch recipe data for the given image_id from Supabase
+        response = supabase.table('recipes').select('*').eq('image_id', image_id).execute()
 
-        if response['status'] == 200:
-            # Extract recipe data from response
-            recipes = response['data']
-
-            # Return recipe data as JSON response
-            return jsonify({'status': 'success', 'recipes': recipes})
+        if response['status'] == 200 and response['data']:
+            # Assuming each image_id uniquely identifies a recipe,
+            # so we expect only one match
+            recipe = response['data'][0]
+            return jsonify({'status': 'success', 'recipe': recipe}), 200
         else:
-            # Handle error response from Supabase
-            error_message = response.get('error') or 'Unknown error occurred'
-            return jsonify({'status': 'error', 'message': error_message}), 500
+            return jsonify({'status': 'error', 'message': 'Recipe not found'}), 404
     except Exception as e:
-        # Handle exceptions
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
