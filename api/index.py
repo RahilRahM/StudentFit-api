@@ -285,16 +285,19 @@ def get_recipes():
         # Fetch recipe data for the given image_id from Supabase
         response = supabase.table('recipes').select('*').eq('image_id', image_id).execute()
 
-        if response['status'] == 200 and response['data']:
+        # Check if the response has data
+        if response.status_code == 200 and response.data:
             # Assuming each image_id uniquely identifies a recipe,
             # so we expect only one match
-            recipe = response['data'][0]
-            return jsonify({'status': 'success', 'recipe': recipe}), 200
-        else:
-            return jsonify({'status': 'error', 'message': 'Recipe not found'}), 404
+            recipe = response.data[0] if response.data else None
+            if recipe:
+                return jsonify({'status': 'success', 'recipe': recipe}), 200
+            else:
+                return jsonify({'status': 'error', 'message': 'Recipe not found'}), 404
     except Exception as e:
-     print(f"Error: {e}")  # This will print the error message to Vercel logs
-    return jsonify({'status': 'error', 'message': str(e)}), 500
+        # Log the exception
+        app.logger.error(f"Error fetching recipe data: {e}")
+        return jsonify({'status': 'error', 'message': 'An error occurred while fetching recipe data'}), 500
 
 
 
