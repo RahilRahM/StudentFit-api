@@ -277,26 +277,22 @@ def api_users_update():
 
 @app.route('/getRecipes', methods=['GET'])
 def get_recipes():
-    image_id = request.args.get('image_id')  # Retrieve the image_id query parameter
+    image_id = request.args.get('image_id')
     if not image_id:
         return jsonify({'status': 'error', 'message': 'Image ID not provided'}), 400
 
     try:
-        # Fetch recipe data for the given image_id from Supabase
-        result = supabase.table('recipes').select('*').eq('image_id', image_id).execute()
+        response = supabase.table('recipes').select('*').eq('image_id', image_id).execute()
+        data = response.get('data', [])
 
-        # Check if the response has data
-        if result.status_code == 200 and result.data:
-            # Assuming each image_id uniquely identifies a recipe,
-            # so we expect only one match
-            recipe = result.data[0] if result.data else None
-            if recipe:
-                return jsonify({'status': 'success', 'recipe': recipe}), 200
-            else:
-                return jsonify({'status': 'error', 'message': 'Recipe not found'}), 404
+        if not data:
+            return jsonify({'status': 'error', 'message': 'Recipe not found'}), 404
+        
+        recipe = data[0]  # Assuming the image_id uniquely identifies the recipe
+        return jsonify({'status': 'success', 'recipe': recipe}), 200
+
     except Exception as e:
-        # Log the exception with stack trace
-        app.logger.exception("An error occurred while fetching recipe data")
+        app.logger.error(f"Error fetching recipe data: {str(e)}")
         return jsonify({'status': 'error', 'message': 'An error occurred while fetching recipe data'}), 500
 
 
