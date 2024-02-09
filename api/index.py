@@ -293,7 +293,9 @@ def get_recipes():
         else:
             return jsonify({'status': 'error', 'message': 'Recipe not found'}), 404
     except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+    print(f"Error: {e}")  # This will print the error message to Vercel logs
+    return jsonify({'status': 'error', 'message': str(e)}), 500
+
 
 
       
