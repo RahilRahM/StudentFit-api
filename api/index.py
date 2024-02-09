@@ -278,28 +278,30 @@ def api_users_update():
 
 @app.route('/getRecipes', methods=['GET'])
 def get_recipes():
-    # The URL-encoded image_id from the query parameters
-    encoded_image_id = request.args.get('image_id')
-    if not encoded_image_id:
+    encoded_image_url = request.args.get('image_id')
+    if not encoded_image_url:
         return jsonify({'status': 'error', 'message': 'Image ID not provided'}), 400
     
     try:
-        # Decode the URL-encoded image_id
-        decoded_image_id = unquote_plus(encoded_image_id)
+        # Decode the URL-encoded image URL
+        decoded_image_url = unquote(encoded_image_url)
         
-        # Logic to transform the Firebase URL to the format stored in Supabase
-        # For example, extract the path without the token
-        path = '/'.join(decoded_image_id.split('/')[7:-1])  # Adjust the indexing based on the URL structure
-        image_id_for_query = f"{path}.jpg"
+        # Parse the URL to extract the path
+        parsed_url = urlparse(decoded_image_url)
+        # Assuming the path format in the URL is '/o/breakfast%2Fbreakfast1.jpg'
+        image_path = parsed_url.path.split('%2F')[1]  # Adjust based on your URL structure
 
-        # Query the database with the transformed image_id
-        response = supabase.table('recipes').select('*').eq('image_id', image_id_for_query).execute()
+        # Query the database with the image path
+        response = supabase.table('recipes').select('*').eq('image_id', image_path).execute()
 
-        # Handle the response
-        # ...
+        if response.data:
+            recipe = response.data[0]  # Assuming unique image_id
+            return jsonify({'status': 'success', 'recipe': recipe}), 200
+        else:
+            return jsonify({'status': 'error', 'message': 'Recipe not found'}), 404
 
     except Exception as e:
-        app.logger.error(f"Error fetching recipe data: {str(e)}")
+        app.logger.error(f"Error fetching recipe data: {e}")
         return jsonify({'status': 'error', 'message': 'An error occurred while fetching recipe data'}), 500
 
 
