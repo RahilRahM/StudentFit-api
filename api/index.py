@@ -275,19 +275,25 @@ def api_users_update():
         return jsonify({'status': 500, 'message': f'Internal Server Error: {str(e)}'}), 500
 
 
-@app.route('/getRecipes', methods=['GET'])
+@app.route('/recipes', methods=['GET'])
 def get_recipes():
     try:
-        # Perform a test query to fetch only a few records, for debugging
-        response = supabase.table('recipes').select('*').limit(5).execute()
+        # Fetch recipe data from Supabase
+        response = supabase.from_('recipes').select('*').execute()
 
-        if response.status_code == 200:
-            return jsonify({'status': 200, 'data': response.data}), 200
+        if response['status'] == 200:
+            # Extract recipe data from response
+            recipes = response['data']
+
+            # Return recipe data as JSON response
+            return jsonify({'status': 'success', 'recipes': recipes})
         else:
-            return jsonify({'status': response.status_code, 'message': 'Failed to fetch recipes'}), response.status_code
-
+            # Handle error response from Supabase
+            error_message = response.get('error') or 'Unknown error occurred'
+            return jsonify({'status': 'error', 'message': error_message}), 500
     except Exception as e:
-        return jsonify({'status': 500, 'message': f'Internal Server Error: {str(e)}'}), 500
+        # Handle exceptions
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
       
