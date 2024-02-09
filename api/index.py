@@ -3,6 +3,7 @@ import json
 from supabase import create_client, Client
 import traceback
 from datetime import datetime
+from urllib.parse import unquote
 
 app = Flask(__name__)
 
@@ -277,17 +278,23 @@ def api_users_update():
 
 @app.route('/getRecipes', methods=['GET'])
 def get_recipes():
-    image_id = request.args.get('image_id')
-    if not image_id:
+    image_id_query = request.args.get('image_id')
+    if not image_id_query:
         return jsonify({'status': 'error', 'message': 'Image ID not provided'}), 400
 
     try:
-        response = supabase.table('recipes').select('*').eq('image_id', image_id).execute()
+        # Decode the URL-encoded image_id
+        decoded_image_id = unquote(image_id_query)
+        # Extract the path from the URL and reconstruct the gs:// format
+        path = decoded_image_id.split('/o/', 1)[1].split('?alt=media')[0]
+        gs_url = f'gs://studentfit-9caab.appspot.com/{path}'
+
+        response = supabase.table('recipes').select('*').eq('image_id', gs_url).execute()
         data = response.get('data', [])
 
         if not data:
             return jsonify({'status': 'error', 'message': 'Recipe not found'}), 404
-        
+
         recipe = data[0]  # Assuming the image_id uniquely identifies the recipe
         return jsonify({'status': 'success', 'recipe': recipe}), 200
 
