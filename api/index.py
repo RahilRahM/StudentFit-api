@@ -283,17 +283,16 @@ def get_recipes():
 
     try:
         # Fetch recipe data for the given image_id from Supabase
-        response = supabase.table('recipes').select('*').eq('image_id', image_id).execute()
+        data = supabase.table('recipes').select('*').eq('image_id', image_id).execute()
 
         # Check if the response has data
-        if  response.data:
+        if data.status_code == 200 and data.get('data'):
             # Assuming each image_id uniquely identifies a recipe,
             # so we expect only one match
-            recipe = response.data[0] if response.data else None
-            if recipe:
-                return jsonify({'status': 'success', 'recipe': recipe}), 200
-            else:
-                return jsonify({'status': 'error', 'message': 'Recipe not found'}), 404
+            recipe = data.get('data')[0]  # Get the first item from the data
+            return jsonify({'status': 'success', 'recipe': recipe}), 200
+        else:
+            return jsonify({'status': 'error', 'message': 'Recipe not found'}), 404
     except Exception as e:
         # Log the exception
         app.logger.error(f"Error fetching recipe data: {e}")
