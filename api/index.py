@@ -286,7 +286,7 @@ def get_recipes():
         response = supabase.table('recipes').select('*').eq('image_id', image_id).execute()
 
         # Check if the response has data
-        if response.status_code == 200 and response.data:
+        if  response.data:
             # Assuming each image_id uniquely identifies a recipe,
             # so we expect only one match
             recipe = response.data[0] if response.data else None
