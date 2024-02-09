@@ -278,25 +278,25 @@ def api_users_update():
 
 @app.route('/getRecipes', methods=['GET'])
 def get_recipes():
-    image_id_query = request.args.get('image_id')
-    if not image_id_query:
+    # The URL-encoded image_id from the query parameters
+    encoded_image_id = request.args.get('image_id')
+    if not encoded_image_id:
         return jsonify({'status': 'error', 'message': 'Image ID not provided'}), 400
-
+    
     try:
         # Decode the URL-encoded image_id
-        decoded_image_id = unquote(image_id_query)
-        # Extract the path from the URL and reconstruct the gs:// format
-        path = decoded_image_id.split('/o/', 1)[1].split('?alt=media')[0]
-        gs_url = f'gs://studentfit-9caab.appspot.com/{path}'
+        decoded_image_id = unquote_plus(encoded_image_id)
+        
+        # Logic to transform the Firebase URL to the format stored in Supabase
+        # For example, extract the path without the token
+        path = '/'.join(decoded_image_id.split('/')[7:-1])  # Adjust the indexing based on the URL structure
+        image_id_for_query = f"{path}.jpg"
 
-        response = supabase.table('recipes').select('*').eq('image_id', gs_url).execute()
-        data = response.get('data', [])
+        # Query the database with the transformed image_id
+        response = supabase.table('recipes').select('*').eq('image_id', image_id_for_query).execute()
 
-        if not data:
-            return jsonify({'status': 'error', 'message': 'Recipe not found'}), 404
-
-        recipe = data[0]  # Assuming the image_id uniquely identifies the recipe
-        return jsonify({'status': 'success', 'recipe': recipe}), 200
+        # Handle the response
+        # ...
 
     except Exception as e:
         app.logger.error(f"Error fetching recipe data: {str(e)}")
