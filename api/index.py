@@ -278,21 +278,13 @@ def api_users_update():
 
 @app.route('/getRecipes', methods=['GET'])
 def get_recipes():
-    encoded_image_url = request.args.get('image_id')
-    if not encoded_image_url:
+    image_id = request.args.get('image_id')
+    if not image_id:
         return jsonify({'status': 'error', 'message': 'Image ID not provided'}), 400
     
     try:
-        # Decode the URL-encoded image URL
-        decoded_image_url = unquote(encoded_image_url)
-        
-        # Parse the URL to extract the path
-        parsed_url = urlparse(decoded_image_url)
-        # Assuming the path format in the URL is '/o/breakfast%2Fbreakfast1.jpg'
-        image_path = parsed_url.path.split('%2F')[1]  # Adjust based on your URL structure
-
         # Query the database with the image path
-        response = supabase.table('recipes').select('*').eq('image_id', image_path).execute()
+        response = supabase.table('recipes').select('title, ingredients, instructions').eq('image_id', image_id).execute()
 
         if response.data:
             recipe = response.data[0]  # Assuming unique image_id
@@ -302,7 +294,7 @@ def get_recipes():
 
     except Exception as e:
         app.logger.error(f"Error fetching recipe data: {e}")
-        return jsonify({'status': 'error', 'message': 'An error occurred while fetching recipe data'}), 500
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 
